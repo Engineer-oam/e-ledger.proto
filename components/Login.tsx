@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AuthService } from '../services/authService';
 import { User } from '../types';
@@ -112,7 +113,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="bg-slate-900 p-4 text-white flex justify-between items-center">
                <h3 className="font-bold flex items-center gap-2">
                  <Server size={18} />
@@ -150,23 +151,24 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
       )}
 
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 relative">
+      {/* Login Card */}
+      <div className="max-w-sm w-full bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-300 relative">
         <button onClick={() => setShowSettings(true)} className="absolute top-4 right-4 z-20 p-2 bg-slate-800/50 hover:bg-slate-800 text-white rounded-full backdrop-blur-sm transition-colors">
           <Settings size={18} />
         </button>
 
-        <div className="bg-slate-900 p-8 text-center relative overflow-hidden">
+        <div className="bg-slate-900 p-8 pt-12 text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
           <div className="relative z-10">
-            <div className="inline-block p-3 bg-indigo-600 rounded-xl mb-4 shadow-lg shadow-indigo-900/50">
-              {view === 'login' ? <Stamp size={32} className="text-white" /> : <KeyRound size={32} className="text-white" />}
+            <div className="inline-block p-4 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-900/50 transform rotate-3">
+              {view === 'login' ? <Stamp size={36} className="text-white" /> : <KeyRound size={36} className="text-white" />}
             </div>
-            <h1 className="text-2xl font-bold text-white mb-1">ExciseLedger</h1>
-            <p className="text-slate-400 text-sm">State Excise Supply Chain Portal</p>
+            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">ExciseLedger</h1>
+            <p className="text-slate-400 text-sm font-medium">State Supply Chain Portal</p>
           </div>
         </div>
         
-        <div className="p-8 pt-10">
+        <div className="p-8 sm:p-10">
           {!useRemote && (
             <div className="mb-6 flex flex-col gap-2">
               <div className="flex justify-center">
@@ -179,21 +181,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           )}
 
           {error && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg text-center animate-in fade-in">
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl text-center animate-in fade-in">
               {error}
             </div>
           )}
           {success && (
-            <div className="mb-6 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg text-center flex items-center justify-center gap-2 animate-in fade-in">
+            <div className="mb-6 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl text-center flex items-center justify-center gap-2 animate-in fade-in">
               <CheckCircle2 size={16} />
               {success}
             </div>
           )}
           
           {view === 'login' ? (
-            <form onSubmit={handleLoginSubmit} className="space-y-5">
+            <form onSubmit={handleLoginSubmit} className="space-y-6">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                   License No / GLN
                 </label>
                 <input
@@ -201,16 +203,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   required
                   value={gln}
                   onChange={(e) => setGln(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition font-mono text-sm"
+                  className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition font-mono text-sm"
                   placeholder="0000000000000"
                 />
               </div>
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Password</label>
-                  <button type="button" onClick={() => { setView('forgot'); setError(''); }} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Forgot?</button>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
+                  <button type="button" onClick={() => { setView('forgot'); setError(''); }} className="text-xs text-indigo-600 hover:text-indigo-800 font-bold">Forgot?</button>
                 </div>
-                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition" placeholder="••••••••" />
+                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition" placeholder="••••••••" />
               </div>
 
               <div className="flex items-center">
@@ -218,7 +220,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-600 cursor-pointer select-none">Remember GLN</label>
               </div>
 
-              <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center space-x-2">
+              <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center space-x-2 transform hover:translate-y-[-1px]">
                 {loading ? <Loader2 size={20} className="animate-spin" /> : <><span>Secure Login</span><ArrowRight size={18} /></>}
               </button>
             </form>
@@ -226,31 +228,31 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <form onSubmit={handleResetSubmit} className="space-y-5">
               {resetStep === 1 && (
                 <>
-                  <p className="text-sm text-slate-600 text-center mb-4">Enter License No to verify identity.</p>
+                  <p className="text-sm text-slate-600 text-center mb-4 leading-relaxed">Enter your License Number to verify identity.</p>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">License / GLN</label>
-                    <input type="text" required value={resetGln} onChange={(e) => setResetGln(e.target.value)} className="w-full border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 font-mono text-sm" />
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">License / GLN</label>
+                    <input type="text" required value={resetGln} onChange={(e) => setResetGln(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 font-mono text-sm" />
                   </div>
-                  <button type="button" onClick={() => { if(resetGln.length >= 8) setResetStep(2); else setError('Invalid Format'); }} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg transition-colors">Verify</button>
+                  <button type="button" onClick={() => { if(resetGln.length >= 8) setResetStep(2); else setError('Invalid Format'); }} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg">Verify Identity</button>
                 </>
               )}
 
               {resetStep === 2 && (
                 <>
                    <p className="text-sm text-slate-600 text-center mb-4">Identity verified. Set new password.</p>
-                   <div><label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">New Password</label><input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500" /></div>
-                   <div><label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Confirm</label><input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500" /></div>
-                  <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2">{loading ? <Loader2 size={18} className="animate-spin"/> : <Lock size={18} />}<span>Update Password</span></button>
+                   <div><label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Password</label><input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500" /></div>
+                   <div><label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Confirm</label><input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500" /></div>
+                  <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-lg">{loading ? <Loader2 size={18} className="animate-spin"/> : <Lock size={18} />}<span>Update Password</span></button>
                 </>
               )}
-              <button type="button" onClick={() => { setView('login'); setError(''); setResetStep(1); }} className="w-full mt-2 text-slate-500 hover:text-slate-800 text-sm font-medium py-2">Cancel</button>
+              <button type="button" onClick={() => { setView('login'); setError(''); setResetStep(1); }} className="w-full mt-2 text-slate-500 hover:text-slate-800 text-sm font-medium py-2">Back to Login</button>
             </form>
           )}
 
           {view === 'login' && (
             <div className="mt-8 pt-6 border-t border-slate-100 text-center">
               <p className="text-slate-500 text-sm mb-3">New Licensee?</p>
-              <Link to="/signup" className="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition-colors">Apply for Account</Link>
+              <Link to="/signup" className="text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors uppercase tracking-wide">Apply for Account</Link>
             </div>
           )}
         </div>

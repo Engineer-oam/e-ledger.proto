@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthService } from '../services/authService';
 import { UserRole } from '../types';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Loader2, Building2, UserCircle, MapPin, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, Loader2, Building2, UserCircle, MapPin, RefreshCw, AlertTriangle, ArrowRight } from 'lucide-react';
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -59,67 +59,102 @@ const Signup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+      {/* Increased Width to max-w-4xl and Rounded Corners to 3xl */}
+      <div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px]">
         
-        <div className="hidden md:flex flex-col justify-between w-1/3 bg-slate-900 p-8 text-white">
-          <div>
-            <div className="inline-block p-2 bg-indigo-600 rounded-lg mb-4">
-              <ShieldCheck size={24} />
+        {/* Sidebar - Adjusted width to w-5/12 (~40%) */}
+        <div className="hidden md:flex w-5/12 bg-slate-900 p-10 text-white flex-col justify-between relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+          
+          <div className="relative z-10">
+            <div className="inline-block p-3 bg-indigo-600 rounded-2xl mb-6 shadow-lg shadow-indigo-900/40">
+              <ShieldCheck size={32} />
             </div>
-            <h2 className="text-xl font-bold mb-2">Excise Portal</h2>
-            <p className="text-slate-400 text-sm">Register your Distillery, Warehouse, or Retail Shop.</p>
+            <h2 className="text-3xl font-extrabold mb-3 tracking-tight">Excise Portal</h2>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Register your Distillery, Bonded Warehouse, or Retail Establishment on the state blockchain network.
+            </p>
           </div>
-          <div className="text-xs text-slate-500">
-            © 2024 State Excise Dept
+
+          <div className="relative z-10 space-y-6">
+             <div className="flex items-center gap-4 text-sm text-slate-300">
+               <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold">1</div>
+               <p>Identity Verification</p>
+             </div>
+             <div className="flex items-center gap-4 text-sm text-slate-300">
+               <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold">2</div>
+               <p>License Mapping</p>
+             </div>
+             <div className="flex items-center gap-4 text-sm text-slate-300">
+               <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold">3</div>
+               <p>Ledger Access</p>
+             </div>
+          </div>
+
+          <div className="text-[10px] text-slate-500 font-mono relative z-10">
+            SECURE GOVERNMENT GATEWAY © 2024
           </div>
         </div>
 
-        <div className="flex-1 p-8">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6">Licensee Registration</h2>
+        {/* Form Area */}
+        <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+          <div className="flex justify-between items-start mb-8">
+             <div>
+                <h2 className="text-2xl font-bold text-slate-800">Licensee Registration</h2>
+                <p className="text-slate-500 text-sm mt-1">Create your digital identity</p>
+             </div>
+             <Link to="/login" className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
+               LOGIN INSTEAD
+             </Link>
+          </div>
           
           {!isRemote && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
-              <AlertTriangle className="text-red-600 shrink-0 mt-0.5" size={20} />
-              <p className="text-xs text-red-800 leading-relaxed font-medium">
-                <strong>Demo Mode:</strong> Account is local only.
-              </p>
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex gap-3">
+              <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={20} />
+              <div className="text-xs text-amber-800 leading-relaxed">
+                <strong className="block mb-1 font-bold">Simulation Mode Active</strong>
+                Account data will be stored locally in your browser.
+              </div>
             </div>
           )}
 
-          {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">{error}</div>}
+          {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl font-medium">{error}</div>}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Owner Name</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Owner Name</label>
                 <div className="relative">
-                  <UserCircle size={16} className="absolute left-3 top-3 text-slate-400" />
-                  <input name="name" required value={formData.name} onChange={handleChange} className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Full Name" />
+                  <UserCircle size={18} className="absolute left-3 top-3 text-slate-400" />
+                  <input name="name" required value={formData.name} onChange={handleChange} className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all" placeholder="Full Name" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Business Name</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Business Name</label>
                 <div className="relative">
-                  <Building2 size={16} className="absolute left-3 top-3 text-slate-400" />
-                  <input name="orgName" required value={formData.orgName} onChange={handleChange} className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="e.g. Royal Distilleries" />
+                  <Building2 size={18} className="absolute left-3 top-3 text-slate-400" />
+                  <input name="orgName" required value={formData.orgName} onChange={handleChange} className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all" placeholder="e.g. Royal Distilleries" />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">License No / GLN</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">License No / GLN</label>
               <div className="flex space-x-2">
                 <div className="relative flex-1">
-                  <MapPin size={16} className="absolute left-3 top-3 text-slate-400" />
-                  <input name="gln" required maxLength={13} minLength={13} value={formData.gln} onChange={handleChange} className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono" placeholder="0000000000000" />
+                  <MapPin size={18} className="absolute left-3 top-3 text-slate-400" />
+                  <input name="gln" required maxLength={13} minLength={13} value={formData.gln} onChange={handleChange} className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono" placeholder="0000000000000" />
                 </div>
-                <button type="button" onClick={handleGenerateGLN} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg border border-slate-300 transition-colors" title="Generate"><RefreshCw size={16} /></button>
+                <button type="button" onClick={handleGenerateGLN} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl border border-slate-200 transition-colors font-medium text-xs flex items-center gap-1" title="Generate Random">
+                   <RefreshCw size={14} /> <span>Gen</span>
+                </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">License Category</label>
-              <select name="role" value={formData.role} onChange={handleChange} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white">
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">License Category</label>
+              <select name="role" value={formData.role} onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white cursor-pointer">
                 <option value={UserRole.MANUFACTURER}>Distillery / Brewery / Bottling Plant</option>
                 <option value={UserRole.DISTRIBUTOR}>Bonded Warehouse / Wholesaler</option>
                 <option value={UserRole.RETAILER}>Retail Shop / Bar / Hotel</option>
@@ -128,19 +163,14 @@ const Signup: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Password</label>
-              <input name="password" type="password" required value={formData.password} onChange={handleChange} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="••••••••" />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Password</label>
+              <input name="password" type="password" required value={formData.password} onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="••••••••" />
             </div>
 
-            <button type="submit" disabled={loading} className="w-full mt-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-70 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center">
-              {loading ? <Loader2 size={20} className="animate-spin" /> : 'Register License'}
+            <button type="submit" disabled={loading} className="w-full mt-6 bg-slate-900 hover:bg-slate-800 disabled:opacity-70 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 transform hover:translate-y-[-1px]">
+              {loading ? <Loader2 size={20} className="animate-spin" /> : <><span>Complete Registration</span><ArrowRight size={18} /></>}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-slate-500 text-sm">Already licensed?</p>
-            <Link to="/login" className="text-indigo-600 hover:text-indigo-800 font-semibold text-sm">Login here</Link>
-          </div>
         </div>
       </div>
     </div>
