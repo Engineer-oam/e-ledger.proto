@@ -227,7 +227,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   required
                   value={gln}
                   onChange={(e) => setGln(e.target.value)}
-                  className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition font-mono text-sm"
+                  className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition font-mono text-sm text-slate-900"
                   placeholder="0000000000000"
                 />
               </div>
@@ -236,7 +236,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Password</label>
                   <button type="button" onClick={() => { setView('forgot'); setError(''); }} className="text-[10px] text-indigo-600 hover:text-indigo-800 font-bold">Forgot?</button>
                 </div>
-                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition text-sm" placeholder="••••••••" />
+                <input 
+                  type="password" 
+                  required 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition text-sm text-slate-900" 
+                  placeholder="••••••••" 
+                />
               </div>
 
               <div className="flex items-center">
@@ -259,7 +266,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   <p className="text-xs text-slate-600 text-center mb-2 leading-relaxed">Enter your License Number to verify identity.</p>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">License / GLN</label>
-                    <input type="text" autoFocus required value={resetGln} onChange={(e) => setResetGln(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-mono text-sm" />
+                    <input type="text" autoFocus required value={resetGln} onChange={(e) => setResetGln(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-mono text-sm text-slate-900" />
                   </div>
                   <button type="submit" disabled={loading} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl transition-colors shadow-lg text-sm flex items-center justify-center gap-2">
                     {loading ? <Loader2 size={16} className="animate-spin" /> : 'Verify Identity'}
@@ -270,8 +277,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               {resetStep === 2 && (
                 <>
                    <p className="text-xs text-slate-600 text-center mb-2">Identity verified. Set new password.</p>
-                   <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">New Password</label><input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 text-sm" /></div>
-                   <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Confirm</label><input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 text-sm" /></div>
+                   <div>
+                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">New Password</label>
+                     <input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 text-sm text-slate-900" />
+                   </div>
+                   <div>
+                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Confirm</label>
+                     <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={`w-full border bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 outline-none text-sm text-slate-900 ${confirmPassword && confirmPassword !== newPassword ? 'border-red-400 focus:ring-red-400' : 'border-slate-200 focus:ring-indigo-500'}`} />
+                   </div>
                   <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-lg text-sm">{loading ? <Loader2 size={18} className="animate-spin"/> : <Lock size={16} />}<span>Update Password</span></button>
                 </>
               )}
