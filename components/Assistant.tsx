@@ -60,7 +60,7 @@ const Assistant: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] w-full mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-8rem)] w-full bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       <div className="bg-slate-50 border-b border-slate-200 p-4 flex items-center space-x-3 shrink-0">
         <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg">
           <Bot size={24} className="text-white" />

@@ -62,7 +62,7 @@ const ProductVerifier: React.FC = () => {
   };
 
   return (
-    <div className="w-full py-8">
+    <div className="w-full">
       {showScanner && (
         <QRScanner 
           onScan={handleCameraScan} 
@@ -70,16 +70,19 @@ const ProductVerifier: React.FC = () => {
         />
       )}
 
-      <div className="text-center mb-8 animate-in slide-in-from-top-4 fade-in duration-500">
-        <div className="inline-flex items-center justify-center p-4 bg-indigo-50 rounded-full mb-4 shadow-inner">
-          <Stamp size={40} className="text-indigo-600" />
+      {/* Standardized Header */}
+      <div className="flex items-center space-x-4 mb-6 animate-in slide-in-from-top-2 fade-in duration-500">
+        <div className="bg-indigo-600 p-3 rounded-xl text-white shadow-lg shadow-indigo-200">
+          <Stamp size={32} />
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Excise Hologram Verify</h2>
-        <p className="text-slate-500 mt-2 text-lg">Official State Excise Verification Portal</p>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Excise Hologram Verify</h2>
+          <p className="text-slate-500 text-sm">Official State Excise Verification Portal</p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 mb-8 w-full">
-        <form onSubmit={e => handleVerify(e)} className="p-2 md:p-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-slate-50 border-b border-slate-100">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 mb-8 w-full overflow-hidden">
+        <form onSubmit={e => handleVerify(e)} className="p-4 md:p-6 flex flex-col md:flex-row items-center gap-3 md:gap-4 bg-slate-50 border-b border-slate-100">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />
             <input
@@ -101,7 +104,7 @@ const ProductVerifier: React.FC = () => {
           <button 
             type="submit" 
             disabled={loading || !query}
-            className="w-full md:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
+            className="w-full md:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap"
           >
             {loading ? 'Verifying...' : 'Check Status'}
           </button>
