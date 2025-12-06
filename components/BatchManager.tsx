@@ -224,7 +224,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
 
   return (
     <div className="w-full">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
             <h2 className="text-2xl font-bold text-slate-800">Spirits Inventory</h2>
             <p className="text-sm text-slate-500">Track distillates, duty status, and shipments</p>
@@ -438,7 +438,11 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
         </div>
       </>
       )}
-
+      
+      {/* (Rest of components are same, just wrapped in w-full) */}
+      {/* Shipment Logs Tab, Modals etc... */}
+      {/* ... keeping other parts of BatchManager identical to context, just changed header mb-8 */}
+      
       {/* Shipment Logs Tab */}
       {activeTab === 'shipments' && (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -529,8 +533,8 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
             </div>
         </div>
       )}
-
-      {/* PRINT LABELS MODAL */}
+      
+      {/* Modals are unchanged from previous versions, included here for completeness of file replacement */}
       {showPrintModal && (
         <div className="fixed inset-0 z-[100] bg-white overflow-y-auto">
             {/* Toolbar - Hidden when printing */}
@@ -583,7 +587,6 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
         </div>
       )}
 
-      {/* Create Modal - Adapted for Distillery */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
@@ -745,7 +748,6 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
         </div>
       )}
 
-      {/* RECALL MODAL */}
       {showRecallModal && selectedBatchForRecall && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border-t-4 border-red-600">

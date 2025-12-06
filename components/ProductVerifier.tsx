@@ -27,13 +27,12 @@ const ProductVerifier: React.FC = () => {
 
     try {
       // 1. Anti-Counterfeit Check (POS API)
-      // Checks if the item is already marked as SOLD in the ledger (Duplicate Scan)
       const posCheck = await LedgerService.checkPOSStatus(searchQuery.trim(), 'public_verifier');
       
       if (posCheck.status === 'DUPLICATE') {
          setDuplicateAlert({ detected: true, msg: posCheck.message });
          setLoading(false);
-         return; // Stop flow to prevent showing "Valid" details for a clone
+         return; 
       }
 
       // 2. Data Lookup
@@ -71,7 +70,7 @@ const ProductVerifier: React.FC = () => {
       )}
 
       {/* Standardized Header */}
-      <div className="flex items-center space-x-4 mb-6 animate-in slide-in-from-top-2 fade-in duration-500">
+      <div className="flex items-center space-x-4 mb-8 animate-in slide-in-from-top-2 fade-in duration-500">
         <div className="bg-indigo-600 p-3 rounded-xl text-white shadow-lg shadow-indigo-200">
           <Stamp size={32} />
         </div>
@@ -83,7 +82,7 @@ const ProductVerifier: React.FC = () => {
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 mb-8 w-full overflow-hidden">
         <form onSubmit={e => handleVerify(e)} className="p-4 md:p-6 flex flex-col md:flex-row items-center gap-3 md:gap-4 bg-slate-50 border-b border-slate-100">
-          <div className="relative flex-1 w-full">
+          <div className="relative flex-1 w-full max-w-2xl">
             <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />
             <input
               type="text"

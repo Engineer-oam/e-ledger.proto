@@ -47,20 +47,16 @@ const RetailerDashboard: React.FC<RetailerDashboardProps> = ({ user }) => {
     setDuplicateAlert({ detected: false, msg: '' });
 
     try {
-      // 1. First, check status via POS API (High speed, Anti-counterfeit)
-      // This checks if the bottle was ALREADY sold elsewhere.
       if (activeMode === 'dispense') {
           const check = await LedgerService.checkPOSStatus(query.trim(), user.gln);
           if (check.status === 'DUPLICATE') {
               setDuplicateAlert({ detected: true, msg: check.message });
-              // We stop here - DO NOT allow sale.
               toast.error("COUNTERFEIT ALERT: Duplicate Scan Detected!");
               setLoading(false);
               return;
           }
       }
 
-      // 2. Retrieve Batch Details
       let batch = await LedgerService.getBatchByID(query.trim());
       if (!batch) batch = await LedgerService.verifyByHash(query.trim());
 
@@ -96,7 +92,7 @@ const RetailerDashboard: React.FC<RetailerDashboardProps> = ({ user }) => {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-8">
       {showScanner && (
         <QRScanner onScan={(text) => { setShowScanner(false); setScanInput(text); handleScan(undefined, text); }} onClose={() => setShowScanner(false)} />
       )}
