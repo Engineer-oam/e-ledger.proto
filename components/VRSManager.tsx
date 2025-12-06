@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User, VerificationRequest, VerificationStatus } from '../types';
 import { LedgerService } from '../services/ledgerService';
@@ -54,10 +53,7 @@ const VRSManager: React.FC<VRSManagerProps> = ({ user }) => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center space-x-4 mb-8">
-        <div className="bg-indigo-600 p-3 rounded-xl text-white">
-          <ShieldCheck size={32} />
-        </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">VRS / Returns Verification</h2>
           <p className="text-slate-500 text-sm">Saleable Returns Verification Service (DSCSA Compliance)</p>
@@ -69,7 +65,10 @@ const VRSManager: React.FC<VRSManagerProps> = ({ user }) => {
         {/* Left: Action Panel */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 className="font-bold text-lg text-slate-800 mb-4">Verify Product</h3>
+            <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                <ShieldCheck className="text-indigo-600" size={20} />
+                <span>Verify Product</span>
+            </h3>
             <form onSubmit={handleVerify} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">GTIN (Product Identifier)</label>

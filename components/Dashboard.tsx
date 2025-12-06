@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Batch, User, UserRole, BatchStatus } from '../types';
 import { LedgerService } from '../services/ledgerService';
@@ -9,7 +8,7 @@ import {
 } from 'recharts';
 import { 
   Stamp, AlertTriangle, Activity, ScanBarcode, Globe, 
-  CheckCircle2, Lightbulb, Wine, Landmark, Database, Lock
+  CheckCircle2, Lightbulb, Wine, Landmark, Database, Lock, LayoutDashboard
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DistributorDashboard from './DistributorDashboard';
@@ -73,6 +72,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
   return (
     <div className="w-full space-y-8 pb-12">
+      
+      {/* Standard Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+           <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+             <LayoutDashboard className="text-indigo-600 hidden sm:block" size={28} />
+             <span>Control Dashboard</span>
+           </h2>
+           <p className="text-slate-500 text-sm mt-1">Real-time Network Overview & Compliance Status</p>
+        </div>
+        <div className="hidden sm:block">
+           <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-1 rounded">Node: {user.orgName.split(' ')[0]}_Peer0</span>
+        </div>
+      </div>
+
       {/* Real-time Infrastructure Status */}
       <div className="bg-slate-900 text-white rounded-lg p-4 flex items-center justify-between shadow-lg w-full">
           <div className="flex flex-wrap items-center gap-4">

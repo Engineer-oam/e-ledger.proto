@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Server, Database, Save, CheckCircle2, AlertTriangle, RefreshCw, Settings } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -38,10 +37,7 @@ const SystemSettings: React.FC = () => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center space-x-4 mb-8">
-        <div className="bg-slate-800 p-3 rounded-xl text-white">
-          <Settings size={32} />
-        </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">System Config</h2>
           <p className="text-slate-500 text-sm">System Architecture & Backend Settings</p>

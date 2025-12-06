@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { LedgerService } from '../services/ledgerService';
 import { Batch } from '../types';
@@ -69,14 +68,11 @@ const ProductVerifier: React.FC = () => {
         />
       )}
 
-      {/* Standardized Header */}
-      <div className="flex items-center space-x-4 mb-8 animate-in slide-in-from-top-2 fade-in duration-500">
-        <div className="bg-indigo-600 p-3 rounded-xl text-white shadow-lg shadow-indigo-200">
-          <Stamp size={32} />
-        </div>
+      {/* Standardized Header (Text Only) */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Excise Hologram Verify</h2>
-          <p className="text-slate-500 text-sm">Official State Excise Verification Portal</p>
+           <h2 className="text-2xl font-bold text-slate-800">Excise Hologram Verify</h2>
+           <p className="text-slate-500 text-sm">Official State Excise Verification Portal</p>
         </div>
       </div>
 
