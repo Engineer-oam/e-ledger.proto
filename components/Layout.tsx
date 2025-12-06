@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import { 
@@ -55,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
   const isWarehouse = user.role === UserRole.DISTRIBUTOR;
   
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-[100dvh] bg-slate-50 overflow-hidden">
       
       {isMobileMenuOpen && (
         <div 

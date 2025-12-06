@@ -5,13 +5,10 @@ import { LedgerService } from '../services/ledgerService';
 import { 
   Scan, 
   ShoppingBag, 
-  PackageCheck, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Store, 
-  Camera, 
   ArrowDownToLine, 
-  CreditCard 
+  CreditCard,
+  Camera,
+  AlertOctagon
 } from 'lucide-react';
 import QRScanner from './QRScanner';
 import { toast } from 'react-toastify';
@@ -22,14 +19,14 @@ interface RetailerDashboardProps {
 
 const RetailerDashboard: React.FC<RetailerDashboardProps> = ({ user }) => {
   const [activeMode, setActiveMode] = useState<'receive' | 'dispense'>('dispense');
-  
   const [scanInput, setScanInput] = useState('');
   const [scannedBatch, setScannedBatch] = useState<Batch | null>(null);
   const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
-  
   const [inventory, setInventory] = useState<Batch[]>([]);
+
+  // Duplicate Detection State
+  const [duplicateAlert, setDuplicateAlert] = useState<{detected: boolean, msg: string}>({ detected: false, msg: '' });
 
   useEffect(() => {
     fetchInventory();
@@ -47,36 +44,41 @@ const RetailerDashboard: React.FC<RetailerDashboardProps> = ({ user }) => {
 
     setLoading(true);
     setScannedBatch(null);
+    setDuplicateAlert({ detected: false, msg: '' });
 
     try {
-      let batch = await LedgerService.getBatchByID(query.trim());
-      if (!batch) {
-        batch = await LedgerService.verifyByHash(query.trim());
+      // 1. First, check status via POS API (High speed, Anti-counterfeit)
+      // This checks if the bottle was ALREADY sold elsewhere.
+      if (activeMode === 'dispense') {
+          const check = await LedgerService.checkPOSStatus(query.trim(), user.gln);
+          if (check.status === 'DUPLICATE') {
+              setDuplicateAlert({ detected: true, msg: check.message });
+              // We stop here - DO NOT allow sale.
+              toast.error("COUNTERFEIT ALERT: Duplicate Scan Detected!");
+              setLoading(false);
+              return;
+          }
       }
+
+      // 2. Retrieve Batch Details
+      let batch = await LedgerService.getBatchByID(query.trim());
+      if (!batch) batch = await LedgerService.verifyByHash(query.trim());
 
       if (batch) {
         setScannedBatch(batch);
         setScanInput(query.trim());
-        toast.info(`Item found: ${batch.productName}`);
       } else {
-        toast.error('Product not found on ledger.');
+        toast.error('Item not found on ledger.');
       }
     } catch (err) {
-      toast.error('Scan failed.');
+      toast.error('Scan Error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCameraScan = (text: string) => {
-    setShowScanner(false);
-    setScanInput(text);
-    handleScan(undefined, text);
-  };
-
   const executeAction = async () => {
     if (!scannedBatch) return;
-    setActionLoading(true);
     try {
       if (activeMode === 'receive') {
         await LedgerService.receiveBatch(scannedBatch.batchID, user);
@@ -90,180 +92,110 @@ const RetailerDashboard: React.FC<RetailerDashboardProps> = ({ user }) => {
       fetchInventory();
     } catch (err: any) {
       toast.error(err.message || 'Action failed.');
-    } finally {
-      setActionLoading(false);
     }
   };
-
-  const stockCount = inventory.filter(b => b.status === BatchStatus.RECEIVED).length;
-  const soldCount = inventory.filter(b => b.status === BatchStatus.SOLD).length;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {showScanner && (
-        <QRScanner onScan={handleCameraScan} onClose={() => setShowScanner(false)} />
+        <QRScanner onScan={(text) => { setShowScanner(false); setScanInput(text); handleScan(undefined, text); }} onClose={() => setShowScanner(false)} />
       )}
 
-      {/* Header & Mode Switcher */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Retail & Pharmacy</h2>
-          <p className="text-slate-500 text-sm">Point of Dispensing & Inventory Control</p>
+          <h2 className="text-2xl font-bold text-slate-800">Retail Point of Sale (POS)</h2>
+          <p className="text-slate-500 text-sm">Blockchain-Verified Dispensing</p>
         </div>
         
         <div className="bg-white p-1 rounded-lg border border-slate-200 shadow-sm flex">
-           <button
-             onClick={() => { setActiveMode('receive'); setScanInput(''); setScannedBatch(null); }}
-             className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${
-               activeMode === 'receive' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'
-             }`}
-           >
-             <ArrowDownToLine size={16} />
-             <span>Receive Stock</span>
+           <button onClick={() => setActiveMode('receive')} className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 ${activeMode === 'receive' ? 'bg-blue-600 text-white' : 'text-slate-500'}`}>
+             <ArrowDownToLine size={16} /><span>Inbound</span>
            </button>
-           <button
-             onClick={() => { setActiveMode('dispense'); setScanInput(''); setScannedBatch(null); }}
-             className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${
-               activeMode === 'dispense' ? 'bg-emerald-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'
-             }`}
-           >
-             <ShoppingBag size={16} />
-             <span>POS / Dispense</span>
+           <button onClick={() => setActiveMode('dispense')} className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 ${activeMode === 'dispense' ? 'bg-emerald-600 text-white' : 'text-slate-500'}`}>
+             <ShoppingBag size={16} /><span>Checkout</span>
            </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* Main Action Area */}
-        <div className="lg:col-span-2">
-          <div className={`rounded-xl shadow-lg overflow-hidden border transition-colors ${
-            activeMode === 'receive' ? 'bg-blue-50 border-blue-100' : 'bg-emerald-50 border-emerald-100'
-          }`}>
-            <div className={`p-6 text-white flex justify-between items-center ${
-              activeMode === 'receive' ? 'bg-blue-600' : 'bg-emerald-600'
-            }`}>
-               <div>
-                 <h3 className="text-lg font-bold flex items-center gap-2">
-                   {activeMode === 'receive' ? <ArrowDownToLine /> : <CreditCard />}
-                   <span>{activeMode === 'receive' ? 'Inbound Scan' : 'Checkout & Dispense'}</span>
-                 </h3>
-                 <p className="text-white/80 text-xs mt-1">
-                   {activeMode === 'receive' 
-                     ? 'Scan incoming shipments to add to inventory.' 
-                     : 'Scan items being sold to verify and deduct stock.'}
-                 </p>
-               </div>
-               <button 
-                 onClick={() => setShowScanner(true)}
-                 className="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-sm"
-               >
-                 <Camera size={18} />
-                 <span>Scan</span>
-               </button>
+        {/* Scanner Section */}
+        <div className={`rounded-xl shadow-lg border p-6 ${duplicateAlert.detected ? 'bg-red-50 border-red-500' : 'bg-white border-slate-200'}`}>
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <Scan /> {activeMode === 'dispense' ? 'Scan to Sell' : 'Scan to Receive'}
+            </h3>
+            
+            <div className="relative mb-6">
+                <input 
+                  autoFocus
+                  type="text" 
+                  value={scanInput}
+                  onChange={e => setScanInput(e.target.value)}
+                  placeholder="Scan QR or Enter ID..."
+                  className="w-full pl-4 pr-12 py-4 text-lg border-2 border-slate-300 rounded-xl outline-none focus:border-blue-500 transition font-mono"
+                />
+                <button onClick={() => setShowScanner(true)} className="absolute right-3 top-3 text-slate-400 hover:text-blue-600">
+                    <Camera size={24} />
+                </button>
             </div>
+            
+            <button 
+                onClick={(e) => handleScan(e)} 
+                disabled={loading}
+                className="w-full bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-lg font-bold transition shadow-md"
+            >
+                {loading ? 'Verifying Blockchain...' : 'Verify & Lookup'}
+            </button>
 
-            <div className="p-8">
-               <form onSubmit={e => handleScan(e)} className="relative mb-6">
-                 <input 
-                   type="text" 
-                   value={scanInput}
-                   onChange={e => setScanInput(e.target.value)}
-                   placeholder={activeMode === 'receive' ? "Scan shipment QR..." : "Scan product for sale..."}
-                   className="w-full pl-12 pr-4 py-4 text-lg border-2 border-white bg-white/50 rounded-xl focus:border-current focus:ring-0 outline-none transition font-mono shadow-inner"
-                   autoFocus
-                 />
-                 <Scan className="absolute left-4 top-5 text-slate-400" size={24} />
-                 <button type="submit" className="absolute right-3 top-2.5 bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-sm">
-                   Lookup
-                 </button>
-               </form>
-
-               {scannedBatch && (
-                 <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 animate-in slide-in-from-bottom-2">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="font-bold text-xl text-slate-800">{scannedBatch.productName}</h4>
-                        <p className="text-sm text-slate-500 font-mono mt-1">{scannedBatch.batchID}</p>
-                      </div>
-                      <div className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                        scannedBatch.status === 'SOLD' ? 'bg-gray-100 text-gray-500' : 'bg-green-100 text-green-700'
-                      }`}>
-                        {scannedBatch.status}
-                      </div>
+            {/* DUPLICATE / COUNTERFEIT ALERT */}
+            {duplicateAlert.detected && (
+                <div className="mt-6 bg-red-100 border-l-4 border-red-600 p-4 rounded animate-pulse">
+                    <div className="flex items-center gap-3">
+                        <AlertOctagon className="text-red-600" size={32} />
+                        <div>
+                            <h4 className="font-black text-red-700 text-lg uppercase">Counterfeit Warning</h4>
+                            <p className="text-red-800 font-medium">{duplicateAlert.msg}</p>
+                            <p className="text-xs text-red-600 mt-1">This bottle ID was already sold. Do not dispense.</p>
+                        </div>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm mb-6">
-                      <div className="bg-slate-50 p-2 rounded">
-                        <span className="block text-xs text-slate-400 uppercase">Expiry</span>
-                        <span className="font-medium">{scannedBatch.expiryDate}</span>
-                      </div>
-                      <div className="bg-slate-50 p-2 rounded">
-                        <span className="block text-xs text-slate-400 uppercase">Qty</span>
-                        <span className="font-medium">{scannedBatch.quantity} {scannedBatch.unit}</span>
-                      </div>
-                    </div>
+                </div>
+            )}
 
-                    <button
-                      onClick={executeAction}
-                      disabled={actionLoading || (activeMode === 'dispense' && scannedBatch.status === 'SOLD')}
-                      className={`w-full py-3 rounded-lg font-bold text-white shadow-md transition-all flex items-center justify-center gap-2 ${
-                        activeMode === 'receive' 
-                          ? 'bg-blue-600 hover:bg-blue-700' 
-                          : 'bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400'
-                      }`}
+            {/* Valid Batch Result */}
+            {scannedBatch && !duplicateAlert.detected && (
+                <div className="mt-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-bold text-lg text-slate-800">{scannedBatch.productName}</h4>
+                        <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded">VERIFIED GENUINE</span>
+                    </div>
+                    <p className="font-mono text-xs text-slate-500 mb-4">{scannedBatch.batchID}</p>
+                    <button 
+                        onClick={executeAction}
+                        className={`w-full py-3 rounded-lg font-bold text-white shadow-md ${activeMode === 'receive' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                     >
-                      {actionLoading ? 'Processing...' : (
-                        activeMode === 'receive' ? 'Confirm Receipt' : 'Complete Sale'
-                      )}
+                        {activeMode === 'receive' ? 'Confirm Inbound Stock' : 'Confirm Sale & Deactivate ID'}
                     </button>
-                    
-                    {activeMode === 'dispense' && scannedBatch.status === 'SOLD' && (
-                      <p className="text-center text-xs text-red-500 mt-2 font-medium">
-                        Item already marked as SOLD.
-                      </p>
-                    )}
-                 </div>
-               )}
-            </div>
-          </div>
+                </div>
+            )}
         </div>
 
-        {/* Stats & Info */}
-        <div className="space-y-6">
-           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-             <div className="flex items-center gap-3 mb-2 text-slate-500">
-               <Store size={20} />
-               <span className="text-sm font-bold uppercase">Store Inventory</span>
-             </div>
-             <p className="text-4xl font-bold text-slate-800">{stockCount}</p>
-             <p className="text-xs text-slate-400 mt-1">Items available for sale</p>
-           </div>
-
-           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-             <div className="flex items-center gap-3 mb-2 text-slate-500">
-               <ShoppingBag size={20} />
-               <span className="text-sm font-bold uppercase">Total Sales</span>
-             </div>
-             <p className="text-4xl font-bold text-slate-800">{soldCount}</p>
-             <p className="text-xs text-slate-400 mt-1">Recorded on blockchain</p>
-           </div>
-
-           <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-             <h4 className="font-bold text-slate-700 text-sm mb-3">Recent Transactions</h4>
-             <ul className="space-y-3">
-               {inventory.slice(0,5).map(b => (
-                 <li key={b.batchID} className="text-sm flex justify-between items-center">
-                   <span className="truncate flex-1 pr-2">{b.productName}</span>
-                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                     b.status === 'SOLD' ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'
-                   }`}>
-                     {b.status}
-                   </span>
-                 </li>
-               ))}
-             </ul>
-           </div>
+        {/* Inventory Stats */}
+        <div className="space-y-4">
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-3 mb-2 text-slate-500">
+                    <ShoppingBag />
+                    <span className="font-bold uppercase text-sm">Available Stock</span>
+                </div>
+                <p className="text-4xl font-bold text-slate-800">{inventory.filter(b => b.status === BatchStatus.RECEIVED).length}</p>
+            </div>
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-3 mb-2 text-slate-500">
+                    <CreditCard />
+                    <span className="font-bold uppercase text-sm">Today's Sales</span>
+                </div>
+                <p className="text-4xl font-bold text-slate-800">{inventory.filter(b => b.status === BatchStatus.SOLD).length}</p>
+            </div>
         </div>
 
       </div>

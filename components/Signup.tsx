@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AuthService } from '../services/authService';
 import { UserRole } from '../types';
@@ -88,7 +89,7 @@ const Signup: React.FC = () => {
           {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">{error}</div>}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Owner Name</label>
                 <div className="relative">

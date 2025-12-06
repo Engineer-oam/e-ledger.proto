@@ -39,7 +39,7 @@ const SystemSettings: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
         <Server className="text-slate-600" />
         <span>System Architecture Settings</span>
@@ -53,7 +53,7 @@ const SystemSettings: React.FC = () => {
           </p>
         </div>
 
-        <div className="p-8 space-y-8">
+        <div className="p-8 space-y-8 max-w-4xl">
           
           {/* Mode Toggle */}
           <div className="flex items-start gap-4">

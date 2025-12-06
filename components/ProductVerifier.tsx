@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { LedgerService } from '../services/ledgerService';
 import { Batch } from '../types';
@@ -48,7 +49,7 @@ const ProductVerifier: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="max-w-7xl mx-auto py-8">
       {showScanner && (
         <QRScanner 
           onScan={handleCameraScan} 
@@ -64,7 +65,7 @@ const ProductVerifier: React.FC = () => {
         <p className="text-slate-500 mt-2">Scan QR or enter ID to check Duty Paid status.</p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200 mb-8">
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200 mb-8 max-w-4xl mx-auto">
         <form onSubmit={e => handleVerify(e)} className="p-2 md:p-4 flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-slate-50 border-b border-slate-100">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />

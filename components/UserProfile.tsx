@@ -41,18 +41,18 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <h2 className="text-2xl font-bold text-slate-800 mb-6">User Profile</h2>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         {/* Header / Banner */}
-        <div className="bg-slate-900 p-8 text-white flex items-center space-x-6">
-          <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-3xl font-bold">
+        <div className="bg-slate-900 p-8 text-white flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+          <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-3xl font-bold shrink-0">
             {user.name.charAt(0)}
           </div>
-          <div>
+          <div className="text-center md:text-left">
             <h3 className="text-2xl font-bold">{user.name}</h3>
-            <div className="flex items-center space-x-2 text-slate-400 mt-1">
+            <div className="flex items-center justify-center md:justify-start space-x-2 text-slate-400 mt-1">
               <Shield size={16} />
               <span className="text-sm font-medium">{user.role}</span>
             </div>
@@ -60,7 +60,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
         </div>
 
         <div className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Read Only Fields */}
               <div>

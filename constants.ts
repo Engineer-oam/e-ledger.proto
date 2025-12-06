@@ -1,3 +1,4 @@
+
 import { Batch, BatchStatus, UserRole, User } from './types';
 
 export const MOCK_USERS: User[] = [
@@ -47,6 +48,8 @@ export const INITIAL_BATCHES: Batch[] = [
     alcoholContent: 42.8,
     category: 'IMFL',
     dutyPaid: false,
+    blockchainId: 'BLK-INIT-001',
+    genesisHash: '0xGENESIS001',
     trace: [
       {
         eventID: 'evt-001',
@@ -56,6 +59,7 @@ export const INITIAL_BATCHES: Batch[] = [
         actorName: 'Royal Spirits Distillery',
         location: 'Plant A - Bottling Line',
         txHash: '0x123abc...789',
+        previousHash: '0x00000000000000000000000000000000',
         metadata: { strength: '42.8%', type: 'IMFL' }
       },
       {
@@ -66,6 +70,7 @@ export const INITIAL_BATCHES: Batch[] = [
         actorName: 'Royal Spirits Distillery',
         location: 'Distillery Gate',
         txHash: '0x456def...012',
+        previousHash: '0x123abc...789',
         metadata: { destination: 'Bonded Warehouse #4' }
       },
       {
@@ -75,7 +80,8 @@ export const INITIAL_BATCHES: Batch[] = [
         actorGLN: '0490001234568',
         actorName: 'State Bonded Warehouse #4',
         location: 'Sector 5 Warehouse',
-        txHash: '0x789ghi...345'
+        txHash: '0x789ghi...345',
+        previousHash: '0x456def...012'
       }
     ]
   },
@@ -93,6 +99,8 @@ export const INITIAL_BATCHES: Batch[] = [
     alcoholContent: 8.0,
     category: 'BEER',
     dutyPaid: false,
+    blockchainId: 'BLK-INIT-002',
+    genesisHash: '0xGENESIS002',
     trace: [
       {
         eventID: 'evt-004',
@@ -101,7 +109,8 @@ export const INITIAL_BATCHES: Batch[] = [
         actorGLN: '0490001234567',
         actorName: 'Royal Spirits Distillery',
         location: 'Brewery Unit 2',
-        txHash: '0xabc123...xyz'
+        txHash: '0xabc123...xyz',
+        previousHash: '0x00000000000000000000000000000000'
       }
     ]
   },
@@ -119,6 +128,8 @@ export const INITIAL_BATCHES: Batch[] = [
     alcoholContent: 40.0,
     category: 'IMFL',
     dutyPaid: true,
+    blockchainId: 'BLK-INIT-003',
+    genesisHash: '0xGENESIS003',
     trace: [
       {
         eventID: 'evt-010',
@@ -127,7 +138,8 @@ export const INITIAL_BATCHES: Batch[] = [
         actorGLN: '0490001234567',
         actorName: 'Royal Spirits Distillery',
         location: 'Import Dock',
-        txHash: '0xAAA...'
+        txHash: '0xAAA...',
+        previousHash: '0x00000000000000000000000000000000'
       },
       {
         eventID: 'evt-011',
@@ -137,6 +149,7 @@ export const INITIAL_BATCHES: Batch[] = [
         actorName: 'Royal Spirits Distillery',
         location: 'Excise Portal',
         txHash: '0xTAX123',
+        previousHash: '0xAAA...',
         metadata: { challanNo: 'EXCISE-2024-999', amount: 500000 }
       },
       {
@@ -146,7 +159,8 @@ export const INITIAL_BATCHES: Batch[] = [
         actorGLN: '0490001234569',
         actorName: 'City Premium Wines',
         location: 'High Street Store',
-        txHash: '0xCCC...'
+        txHash: '0xCCC...',
+        previousHash: '0xTAX123'
       },
       {
         eventID: 'evt-013',
@@ -156,6 +170,7 @@ export const INITIAL_BATCHES: Batch[] = [
         actorName: 'City Premium Wines',
         location: 'POS Terminal 1',
         txHash: '0xEEE...',
+        previousHash: '0xCCC...',
         metadata: { type: 'Consumer Sale' }
       }
     ]

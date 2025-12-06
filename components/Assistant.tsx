@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../services/geminiService';
 import { Bot, Send, User as UserIcon, Loader2 } from 'lucide-react';
@@ -59,8 +60,8 @@ const Assistant: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-      <div className="bg-slate-50 border-b border-slate-200 p-4 flex items-center space-x-3">
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+      <div className="bg-slate-50 border-b border-slate-200 p-4 flex items-center space-x-3 shrink-0">
         <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg">
           <Bot size={24} className="text-white" />
         </div>
@@ -76,7 +77,7 @@ const Assistant: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
         {messages.map(msg => (
           <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] rounded-2xl px-5 py-3 shadow-sm ${
+            <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-5 py-3 shadow-sm ${
               msg.sender === 'user' 
                 ? 'bg-blue-600 text-white rounded-br-none' 
                 : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'
@@ -100,7 +101,7 @@ const Assistant: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-200 flex items-center space-x-3">
+      <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-200 flex items-center space-x-3 shrink-0">
         <input 
           type="text" 
           value={input}
