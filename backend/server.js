@@ -142,6 +142,30 @@ app.post('/api/auth/signup', (req, res) => {
   );
 });
 
+// Check User Exists (For Forgot Password)
+app.post('/api/auth/check', (req, res) => {
+  const { gln } = req.body;
+  db.get('SELECT gln FROM users WHERE gln = ?', [gln], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ exists: !!row });
+  });
+});
+
+// Reset Password
+app.post('/api/auth/reset', (req, res) => {
+  const { gln, newPassword } = req.body;
+  db.run(
+    'UPDATE users SET password = ? WHERE gln = ?',
+    [newPassword, gln],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
+      logAudit(gln, 'PASSWORD_RESET', 'AUTH', 'User reset password');
+      res.json({ success: true });
+    }
+  );
+});
+
 // 2. BATCH OPERATIONS (With Secrecy & Blockchain Logic)
 app.get('/api/batches', (req, res) => {
   const { gln, role } = req.query;
@@ -149,12 +173,19 @@ app.get('/api/batches', (req, res) => {
   db.all('SELECT * FROM batches', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     
-    // Parse JSON fields
-    let batches = rows.map(r => ({
-      ...r,
-      ...JSON.parse(r.data), // Spread data back into object
-      trace: JSON.parse(r.trace)
-    }));
+    // Parse JSON fields with safety checks
+    let batches = rows.map(r => {
+        try {
+            return {
+                ...r,
+                ...JSON.parse(r.data || '{}'), 
+                trace: JSON.parse(r.trace || '[]')
+            };
+        } catch (e) {
+            console.error("Data corruption in batch", r.batchID);
+            return null;
+        }
+    }).filter(b => b !== null);
 
     // --- SECRECY FILTER ---
     if (role !== 'REGULATOR' && role !== 'AUDITOR') {
@@ -178,12 +209,16 @@ app.get('/api/batches/:id', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: 'Batch not found' });
     
-    const batch = {
-      ...row,
-      ...JSON.parse(row.data),
-      trace: JSON.parse(row.trace)
-    };
-    res.json(batch);
+    try {
+        const batch = {
+        ...row,
+        ...JSON.parse(row.data),
+        trace: JSON.parse(row.trace)
+        };
+        res.json(batch);
+    } catch(e) {
+        res.status(500).json({ error: 'Data Corruption detected in Batch ID' });
+    }
   });
 });
 

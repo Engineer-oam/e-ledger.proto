@@ -77,8 +77,21 @@ export const LedgerService = {
     );
   },
 
+  // Optimized for AI Analysis
+  exportLedger: async (): Promise<Batch[]> => {
+    if (isRemote()) {
+       try {
+         // Fetch all batches (Simulating Auditor View for AI)
+         const API_URL = getApiUrl();
+         const res = await fetch(`${API_URL}/batches?role=AUDITOR`); 
+         if (res.ok) return await res.json();
+       } catch (e) { return []; }
+    }
+    return getLedgerState();
+  },
+
   getAllDataAsJson: (): string => {
-    // Synchronous access to local state for AI analysis
+    // Legacy support (Synchronous local)
     const ledgerState = getLedgerState();
     return JSON.stringify(ledgerState, null, 2);
   },

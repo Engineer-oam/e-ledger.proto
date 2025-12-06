@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { LedgerService } from "./ledgerService";
 
@@ -18,7 +19,9 @@ export const GeminiService = {
     const ai = getAI();
     if (!ai) return "AI services are currently unavailable. Please check your API key configuration.";
 
-    const ledgerData = LedgerService.getAllDataAsJson();
+    // Use async export to ensure we get data even if running in remote mode
+    const batches = await LedgerService.exportLedger();
+    const ledgerData = JSON.stringify(batches, null, 2);
 
     const systemPrompt = `
       You are an expert State Excise Audit AI for the "ExciseLedger" blockchain system.

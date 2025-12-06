@@ -32,8 +32,14 @@ const SSCCManager: React.FC<SSCCManagerProps> = ({ user }) => {
 
   const fetchBatches = async () => {
     const data = await LedgerService.getBatches(user);
-    // Filter batches that can be aggregated (e.g., Created or Received)
-    setBatches(data.filter(b => b.status === BatchStatus.CREATED || b.status === BatchStatus.RECEIVED));
+    // Filter batches that can be aggregated. 
+    // Allow Bonded, Duty Paid, and Received stock to be palletized.
+    setBatches(data.filter(b => 
+        b.status === BatchStatus.CREATED || 
+        b.status === BatchStatus.BONDED || 
+        b.status === BatchStatus.DUTY_PAID || 
+        b.status === BatchStatus.RECEIVED
+    ));
   };
 
   const toggleBatchSelection = (batchID: string) => {
