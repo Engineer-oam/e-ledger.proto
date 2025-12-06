@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Batch, User, GSTDetails, EWayBill, PaymentStatus } from '../types';
-import { Truck, FileText, IndianRupee, ShieldCheck, Printer, ArrowRight, CreditCard, MapPin, Check, User as UserIcon, ArrowLeft, Package, Banknote, Percent } from 'lucide-react';
+import { Truck, FileText, IndianRupee, ShieldCheck, Printer, ArrowRight, CreditCard, MapPin, Check, User as UserIcon, ArrowLeft, Package, Banknote, Percent, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import PrintableInvoice from './PrintableInvoice';
 
@@ -47,12 +47,50 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
     notes: ''
   });
 
-  const handleSubmit = async () => {
-    if (!recipient.gln || !recipient.name) {
-      toast.error("Recipient details required");
-      return;
+  // Validation Logic
+  const validateStep1 = () => {
+    if (!recipient.gln || recipient.gln.length !== 13) {
+        toast.warn("Please enter a valid 13-digit GLN.");
+        return false;
     }
+    if (!recipient.name || recipient.name.length < 3) {
+        toast.warn("Please enter a valid Organization Name.");
+        return false;
+    }
+    return true;
+  };
 
+  const validateStep2 = () => {
+      if (!transportData.vehicleNo) {
+          toast.warn("Vehicle Number is required for E-Way Bill.");
+          return false;
+      }
+      if (transportData.distance <= 0) {
+          toast.warn("Transport distance must be greater than 0 km.");
+          return false;
+      }
+      if (!transportData.fromPlace || !transportData.toPlace) {
+          toast.warn("Origin and Destination are required.");
+          return false;
+      }
+      return true;
+  };
+
+  const handleNext = () => {
+      if (step === 1) {
+          if (!validateStep1()) return;
+          // Auto-fill destination if empty
+          if (!transportData.toPlace) {
+              setTransportData(prev => ({ ...prev, toPlace: recipient.name }));
+          }
+          setStep(2);
+      } else if (step === 2) {
+          if (!validateStep2()) return;
+          setStep(3);
+      }
+  };
+
+  const handleSubmit = async () => {
     setLoading(true);
     
     // Construct GST Object
@@ -67,10 +105,10 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
 
     // Construct EWB Object
     const ewbPartial: Partial<EWayBill> = {
-      vehicleNo: transportData.vehicleNo || 'XX-00-0000', 
+      vehicleNo: transportData.vehicleNo, 
       distanceKm: transportData.distance,
       fromPlace: transportData.fromPlace,
-      toPlace: transportData.toPlace || recipient.name
+      toPlace: transportData.toPlace
     };
 
     // Construct Payment Metadata
@@ -115,7 +153,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
             ewbNo: '141' + Math.floor(100000000 + Math.random() * 900000000), 
             vehicleNo: transportData.vehicleNo,
             fromPlace: transportData.fromPlace,
-            toPlace: transportData.toPlace || recipient.name,
+            toPlace: transportData.toPlace,
             distanceKm: transportData.distance,
             validUntil: new Date(Date.now() + (Math.ceil(transportData.distance / 200) * 86400000)).toISOString(),
             generatedDate: new Date().toISOString()
@@ -414,13 +452,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
 
             {step < 3 ? (
                 <button 
-                    onClick={() => {
-                        if (step === 1 && (!recipient.gln || !recipient.name)) {
-                            toast.warn("Please enter recipient details.");
-                            return;
-                        }
-                        setStep(step + 1 as any);
-                    }}
+                    onClick={handleNext}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-indigo-900/20 transition-all hover:translate-y-[-1px]"
                 >
                     <span>Next Step</span>

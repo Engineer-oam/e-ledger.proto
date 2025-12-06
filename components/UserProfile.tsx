@@ -60,7 +60,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
         </div>
 
         <div className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+          <form onSubmit={handleSubmit} className="space-y-6 w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Read Only Fields */}
               <div>

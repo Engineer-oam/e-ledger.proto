@@ -72,7 +72,7 @@ const TraceVisualizer = ({ user }: { user: User }) => {
       </div>
 
       {/* Timeline */}
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full">
         <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
             <Clock className="text-slate-400" />
             <span>Chain of Custody</span>

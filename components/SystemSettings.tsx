@@ -53,7 +53,7 @@ const SystemSettings: React.FC = () => {
           </p>
         </div>
 
-        <div className="p-8 space-y-8 max-w-4xl">
+        <div className="p-8 space-y-8 w-full">
           
           {/* Mode Toggle */}
           <div className="flex items-start gap-4">

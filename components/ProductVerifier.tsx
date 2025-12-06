@@ -78,7 +78,7 @@ const ProductVerifier: React.FC = () => {
         <p className="text-slate-500 mt-2 text-lg">Official State Excise Verification Portal</p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 mb-8 max-w-3xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 mb-8 w-full">
         <form onSubmit={e => handleVerify(e)} className="p-2 md:p-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-slate-50 border-b border-slate-100">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />
