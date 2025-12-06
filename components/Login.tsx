@@ -244,7 +244,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-600 cursor-pointer select-none">Remember GLN</label>
               </div>
 
-              <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center space-x-2 transform hover:translate-y-[-1px] text-sm">
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className="w-full bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-indigo-200 transition-all duration-300 ease-in-out flex items-center justify-center space-x-2 text-sm"
+              >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : <><span>Secure Login</span><ArrowRight size={16} /></>}
               </button>
             </form>

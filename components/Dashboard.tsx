@@ -72,10 +72,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const COLORS = ['#f59e0b', '#10b981', '#6366f1'];
 
   return (
-    <div className="max-w-[96%] mx-auto space-y-8 pb-12">
+    <div className="w-full space-y-8 pb-12">
       {/* Real-time Infrastructure Status */}
       <div className="bg-slate-900 text-white rounded-lg p-4 flex items-center justify-between shadow-lg">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                   <span className="relative flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -96,7 +96,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           {user.role !== 'REGULATOR' && (
               <div className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1 rounded-full text-indigo-300 border border-indigo-500/30">
                   <Lock size={12} />
-                  <span>Encrypted Channel (Competitor Isolation Active)</span>
+                  <span className="hidden sm:inline">Encrypted Channel</span>
               </div>
           )}
       </div>

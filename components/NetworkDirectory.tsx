@@ -15,7 +15,7 @@ const NetworkDirectory: React.FC = () => {
   );
 
   return (
-    <div className="max-w-[96%] mx-auto">
+    <div className="w-full">
       <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
         <div>
            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">

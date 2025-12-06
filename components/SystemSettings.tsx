@@ -39,7 +39,7 @@ const SystemSettings: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[96%] mx-auto">
+    <div className="w-full">
       <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
         <Server className="text-slate-600" />
         <span>System Architecture Settings</span>

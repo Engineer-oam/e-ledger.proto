@@ -62,7 +62,7 @@ const ProductVerifier: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[96%] mx-auto py-8">
+    <div className="w-full py-8">
       {showScanner && (
         <QRScanner 
           onScan={handleCameraScan} 

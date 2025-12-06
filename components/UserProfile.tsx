@@ -41,7 +41,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
   };
 
   return (
-    <div className="max-w-[96%] mx-auto">
+    <div className="w-full">
       <h2 className="text-2xl font-bold text-slate-800 mb-6">User Profile</h2>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

@@ -221,7 +221,7 @@ const FinancialRecords: React.FC<FinancialRecordsProps> = ({ user }) => {
   };
 
   return (
-    <div className="max-w-[96%] mx-auto">
+    <div className="w-full">
       {printData && (
         <PrintableInvoice 
           type={printData.id.startsWith('CN') ? 'CREDIT_NOTE' : printData.id.startsWith('RCPT') ? 'RECEIPT' : 'INVOICE'}

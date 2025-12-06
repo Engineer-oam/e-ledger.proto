@@ -53,7 +53,7 @@ const VRSManager: React.FC<VRSManagerProps> = ({ user }) => {
   };
 
   return (
-    <div className="max-w-[96%] mx-auto">
+    <div className="w-full">
       <div className="flex items-center space-x-4 mb-8">
         <div className="bg-indigo-600 p-3 rounded-xl text-white">
           <ShieldCheck size={32} />

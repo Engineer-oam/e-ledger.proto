@@ -31,7 +31,7 @@ const TraceVisualizer = ({ user }: { user: User }) => {
   if (!batch) return <div className="p-8 text-center text-red-500">Batch not found on ledger.</div>;
 
   return (
-    <div className="max-w-[96%] mx-auto">
+    <div className="w-full">
       <Link to="/batches" className="flex items-center space-x-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
         <ArrowLeft size={18} />
         <span>Back to Inventory</span>

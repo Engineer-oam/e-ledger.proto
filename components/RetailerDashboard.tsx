@@ -96,7 +96,7 @@ const RetailerDashboard: React.FC<RetailerDashboardProps> = ({ user }) => {
   };
 
   return (
-    <div className="max-w-[96%] mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {showScanner && (
         <QRScanner onScan={(text) => { setShowScanner(false); setScanInput(text); handleScan(undefined, text); }} onClose={() => setShowScanner(false)} />
       )}
