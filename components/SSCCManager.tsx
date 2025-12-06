@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, Batch, LogisticsUnit } from '../types';
+import { User, Batch, LogisticsUnit, BatchStatus } from '../types';
 import { LedgerService } from '../services/ledgerService';
 import { AuthService } from '../services/authService';
 import { Package, Plus, Printer, Box, CheckSquare, Square } from 'lucide-react';
@@ -33,7 +33,7 @@ const SSCCManager: React.FC<SSCCManagerProps> = ({ user }) => {
   const fetchBatches = async () => {
     const data = await LedgerService.getBatches(user);
     // Filter batches that can be aggregated (e.g., Created or Received)
-    setBatches(data.filter(b => b.status === 'CREATED' || b.status === 'RECEIVED'));
+    setBatches(data.filter(b => b.status === BatchStatus.CREATED || b.status === BatchStatus.RECEIVED));
   };
 
   const toggleBatchSelection = (batchID: string) => {

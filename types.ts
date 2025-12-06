@@ -1,56 +1,60 @@
-
-
 export enum UserRole {
-  MANUFACTURER = 'MANUFACTURER',
-  DISTRIBUTOR = 'DISTRIBUTOR',
-  RETAILER = 'RETAILER',
-  REGULATOR = 'REGULATOR',
+  MANUFACTURER = 'MANUFACTURER', // Context: Distillery / Brewery
+  DISTRIBUTOR = 'DISTRIBUTOR',   // Context: Bonded Warehouse / Wholesaler
+  RETAILER = 'RETAILER',         // Context: Wine Shop / Bar
+  REGULATOR = 'REGULATOR',       // Context: Excise Inspector / Officer
   AUDITOR = 'AUDITOR'
 }
 
 export enum BatchStatus {
-  CREATED = 'CREATED',
+  CREATED = 'DISTILLED',
   IN_TRANSIT = 'IN_TRANSIT',
   RECEIVED = 'RECEIVED',
   SOLD = 'SOLD',
   RECALLED = 'RECALLED',
   DESTROYED = 'DESTROYED',
   RETURNED = 'RETURNED',
-  QUARANTINED = 'QUARANTINED'
+  QUARANTINED = 'SEIZED', // Excise term
+  BONDED = 'BONDED',      // New: In Bonded Warehouse (Duty Unpaid)
+  DUTY_PAID = 'DUTY_PAID' // New: Duty Paid, ready for retail
 }
 
 export interface TraceEvent {
   eventID: string;
-  type: 'MANUFACTURE' | 'DISPATCH' | 'RECEIVE' | 'SALE' | 'AGGREGATION' | 'TRANSFORMATION' | 'RETURN' | 'RETURN_RECEIPT' | 'SHIPMENT_RECEIPT';
+  type: 'MANUFACTURE' | 'DISPATCH' | 'RECEIVE' | 'SALE' | 'AGGREGATION' | 'TRANSFORMATION' | 'RETURN' | 'RETURN_RECEIPT' | 'SHIPMENT_RECEIPT' | 'DUTY_PAYMENT' | 'PERMIT_ISSUE';
   timestamp: string;
   actorGLN: string;
   actorName: string;
   location: string;
   metadata?: Record<string, any>;
-  txHash: string; // Simulated Blockchain Transaction Hash
+  txHash: string;
 }
 
 export interface Batch {
   batchID: string;
-  gtin: string; // 14-digit Global Trade Item Number
+  gtin: string; 
   lotNumber: string;
-  expiryDate: string;
+  expiryDate: string; // Or Bottling Date for spirits that don't expire? Keeping expiry for beer/wine
   quantity: number;
   unit: string;
   manufacturerGLN: string;
   currentOwnerGLN: string;
-  intendedRecipientGLN?: string; // Privacy: Only this GLN can receive it
+  intendedRecipientGLN?: string;
   status: BatchStatus;
   trace: TraceEvent[];
   productName: string;
-  integrityHash?: string; // Digital Twin Unique ID
+  integrityHash?: string; 
+  // Excise Specific Fields
+  alcoholContent?: number; // ABV %
+  category?: 'IMFL' | 'BEER' | 'COUNTRY_LIQUOR' | 'WINE' | 'SPIRIT';
+  dutyPaid?: boolean;
 }
 
 export interface LogisticsUnit {
-  sscc: string; // 18-digit Serial Shipping Container Code
+  sscc: string;
   creatorGLN: string;
   status: 'CREATED' | 'SHIPPED' | 'RECEIVED';
-  contents: string[]; // Array of Batch IDs contained in this pallet
+  contents: string[];
   createdDate: string;
   txHash: string;
 }
@@ -59,7 +63,7 @@ export interface User {
   id: string;
   name: string;
   role: UserRole;
-  gln: string; // Global Location Number
+  gln: string;
   orgName: string;
 }
 
@@ -76,13 +80,13 @@ export enum VerificationStatus {
   PENDING = 'PENDING',
   VERIFIED = 'VERIFIED',
   FAILED = 'FAILED',
-  SUSPECT = 'SUSPECT' // DSCSA term for potential counterfeit
+  SUSPECT = 'SUSPECT' // Potential Counterfeit / Illicit
 }
 
 export interface VerificationRequest {
   reqID: string;
   requesterGLN: string;
-  responderGLN: string; // Manufacturer
+  responderGLN: string;
   gtin: string;
   serialOrLot: string;
   timestamp: string;
@@ -102,7 +106,7 @@ export enum PaymentStatus {
 
 export interface PaymentDetails {
   status: PaymentStatus;
-  method: 'CASH' | 'CARD' | 'INSURANCE' | 'INVOICE';
+  method: 'CASH' | 'CARD' | 'INSURANCE' | 'INVOICE' | 'CHALLAN';
   amount: number;
   currency: string;
   timestamp: string;

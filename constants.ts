@@ -3,74 +3,78 @@ import { Batch, BatchStatus, UserRole, User } from './types';
 export const MOCK_USERS: User[] = [
   {
     id: 'user-mfg-01',
-    name: 'Alice Manufacturing',
+    name: 'John Distiller',
     role: UserRole.MANUFACTURER,
     gln: '0490001234567',
-    orgName: 'Apex Pharma Ltd.'
+    orgName: 'Royal Spirits Distillery'
   },
   {
     id: 'user-dist-01',
-    name: 'Bob Logistics',
+    name: 'Bob Warehouse',
     role: UserRole.DISTRIBUTOR,
     gln: '0490001234568',
-    orgName: 'Global Distro Corp'
+    orgName: 'State Bonded Warehouse #4'
   },
   {
     id: 'user-ret-01',
     name: 'Charlie Retail',
     role: UserRole.RETAILER,
     gln: '0490001234569',
-    orgName: 'MediCare Pharmacy'
+    orgName: 'City Premium Wines'
   },
   {
     id: 'user-reg-01',
-    name: 'Inspector Gadget',
+    name: 'Officer Vijay',
     role: UserRole.REGULATOR,
     gln: '0490001234599',
-    orgName: 'Govt Health Authority'
+    orgName: 'State Excise Department'
   }
 ];
 
-// Seed Data simulating Ledger State
+// Seed Data simulating Ledger State for Liquor
 export const INITIAL_BATCHES: Batch[] = [
   {
     batchID: 'BATCH-20241001-A',
     gtin: '00089012345678',
-    lotNumber: 'LOT-A100',
-    expiryDate: '2026-10-01',
-    quantity: 5000,
-    unit: 'vials',
+    lotNumber: 'VAT-42',
+    expiryDate: '2030-10-01', // Spirits shelf life
+    quantity: 500,
+    unit: 'Cases',
     manufacturerGLN: '0490001234567',
-    currentOwnerGLN: '0490001234568', // Currently with Distributor
-    status: BatchStatus.IN_TRANSIT,
-    productName: 'Vaccine-X19',
+    currentOwnerGLN: '0490001234568', // Currently with Bonded Warehouse
+    status: BatchStatus.BONDED,
+    productName: 'Royal Reserve Whisky 750ml',
+    alcoholContent: 42.8,
+    category: 'IMFL',
+    dutyPaid: false,
     trace: [
       {
         eventID: 'evt-001',
         type: 'MANUFACTURE',
         timestamp: '2024-10-01T08:00:00Z',
         actorGLN: '0490001234567',
-        actorName: 'Apex Pharma Ltd.',
-        location: 'Mumbai Plant A',
+        actorName: 'Royal Spirits Distillery',
+        location: 'Plant A - Bottling Line',
         txHash: '0x123abc...789',
-        metadata: { temperature: '4.0C' }
+        metadata: { strength: '42.8%', type: 'IMFL' }
       },
       {
         eventID: 'evt-002',
         type: 'DISPATCH',
         timestamp: '2024-10-02T14:30:00Z',
         actorGLN: '0490001234567',
-        actorName: 'Apex Pharma Ltd.',
-        location: 'Mumbai Warehouse',
-        txHash: '0x456def...012'
+        actorName: 'Royal Spirits Distillery',
+        location: 'Distillery Gate',
+        txHash: '0x456def...012',
+        metadata: { destination: 'Bonded Warehouse #4' }
       },
       {
         eventID: 'evt-003',
         type: 'RECEIVE',
         timestamp: '2024-10-03T09:15:00Z',
         actorGLN: '0490001234568',
-        actorName: 'Global Distro Corp',
-        location: 'Delhi Hub',
+        actorName: 'State Bonded Warehouse #4',
+        location: 'Sector 5 Warehouse',
         txHash: '0x789ghi...345'
       }
     ]
@@ -78,22 +82,25 @@ export const INITIAL_BATCHES: Batch[] = [
   {
     batchID: 'BATCH-20241005-B',
     gtin: '00089098765432',
-    lotNumber: 'LOT-B200',
-    expiryDate: '2025-05-20',
-    quantity: 1000,
-    unit: 'boxes',
+    lotNumber: 'BREW-99',
+    expiryDate: '2025-04-20', // Beer expiry
+    quantity: 2000,
+    unit: 'Crates',
     manufacturerGLN: '0490001234567',
     currentOwnerGLN: '0490001234567',
     status: BatchStatus.CREATED,
-    productName: 'PainRelief Ultra',
+    productName: 'Thunderbolt Strong Beer',
+    alcoholContent: 8.0,
+    category: 'BEER',
+    dutyPaid: false,
     trace: [
       {
         eventID: 'evt-004',
         type: 'MANUFACTURE',
         timestamp: '2024-10-05T10:00:00Z',
         actorGLN: '0490001234567',
-        actorName: 'Apex Pharma Ltd.',
-        location: 'Mumbai Plant B',
+        actorName: 'Royal Spirits Distillery',
+        location: 'Brewery Unit 2',
         txHash: '0xabc123...xyz'
       }
     ]
@@ -101,41 +108,55 @@ export const INITIAL_BATCHES: Batch[] = [
   {
     batchID: 'BATCH-20240901-C',
     gtin: '00089011223344',
-    lotNumber: 'LOT-C99',
-    expiryDate: '2024-12-01',
-    quantity: 200,
-    unit: 'units',
+    lotNumber: 'IMP-01',
+    expiryDate: '2029-12-01',
+    quantity: 50,
+    unit: 'Bottles',
     manufacturerGLN: '0490001234567',
     currentOwnerGLN: '0490001234569', // Retailer
-    status: BatchStatus.RECEIVED,
-    productName: 'CoughSyrup Kids',
+    status: BatchStatus.SOLD,
+    productName: 'Highland Single Malt 12Y',
+    alcoholContent: 40.0,
+    category: 'IMFL',
+    dutyPaid: true,
     trace: [
       {
         eventID: 'evt-010',
         type: 'MANUFACTURE',
         timestamp: '2024-09-01T08:00:00Z',
         actorGLN: '0490001234567',
-        actorName: 'Apex Pharma Ltd.',
-        location: 'Pune Plant',
+        actorName: 'Royal Spirits Distillery',
+        location: 'Import Dock',
         txHash: '0xAAA...'
       },
       {
         eventID: 'evt-011',
-        type: 'DISPATCH',
-        timestamp: '2024-09-05T10:00:00Z',
+        type: 'DUTY_PAYMENT',
+        timestamp: '2024-09-02T10:00:00Z',
         actorGLN: '0490001234567',
-        actorName: 'Apex Pharma Ltd.',
-        location: 'Pune Warehouse',
-        txHash: '0xBBB...'
+        actorName: 'Royal Spirits Distillery',
+        location: 'Excise Portal',
+        txHash: '0xTAX123',
+        metadata: { challanNo: 'EXCISE-2024-999', amount: 500000 }
       },
       {
         eventID: 'evt-012',
         type: 'RECEIVE',
         timestamp: '2024-09-06T12:00:00Z',
         actorGLN: '0490001234569',
-        actorName: 'MediCare Pharmacy',
-        location: 'Bangalore Store',
+        actorName: 'City Premium Wines',
+        location: 'High Street Store',
         txHash: '0xCCC...'
+      },
+      {
+        eventID: 'evt-013',
+        type: 'SALE',
+        timestamp: '2024-09-10T18:30:00Z',
+        actorGLN: '0490001234569',
+        actorName: 'City Premium Wines',
+        location: 'POS Terminal 1',
+        txHash: '0xEEE...',
+        metadata: { type: 'Consumer Sale' }
       }
     ]
   }

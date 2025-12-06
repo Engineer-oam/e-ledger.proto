@@ -1,15 +1,14 @@
 import React from 'react';
-import { Printer, ScanBarcode } from 'lucide-react';
+import { Printer, ScanBarcode, ShieldCheck } from 'lucide-react';
 
 interface BatchLabelProps {
   gtin: string;
   lot: string;
-  expiry: string; // YYYY-MM-DD
+  expiry: string; 
   productName: string;
 }
 
 const BatchLabel: React.FC<BatchLabelProps> = ({ gtin, lot, expiry, productName }) => {
-  // Format Expiry YYYY-MM-DD -> YYMMDD for GS1 AI (17)
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '000000';
     try {
@@ -24,78 +23,60 @@ const BatchLabel: React.FC<BatchLabelProps> = ({ gtin, lot, expiry, productName 
   };
 
   const expShort = formatDate(expiry);
-  
-  // Construct GS1 Element String
-  // AI (01) GTIN
-  // AI (17) Expiration Date
-  // AI (10) Batch/Lot Number
   const gs1Text = `(01)${gtin || '00000000000000'}(17)${expShort}(10)${lot || '000'}`;
-  
-  // Encode for URL (bwip-js API)
   const encodedText = encodeURIComponent(gs1Text);
 
   return (
-    <div className="bg-white border-2 border-slate-800 p-4 w-full max-w-sm rounded-lg shadow-sm print:border-black print:shadow-none">
-        {/* Label Header */}
-        <div className="flex items-start justify-between mb-3 border-b border-slate-200 pb-2">
-             <div className="overflow-hidden">
-                 <h4 className="font-bold text-lg leading-tight truncate text-slate-900">{productName || 'PRODUCT NAME'}</h4>
-                 <p className="text-[10px] text-slate-500 font-medium">Rx Only • Sterile Injectable</p>
-             </div>
-             <div className="text-right shrink-0 ml-2">
-                 <div className="flex items-center gap-1 text-[10px] uppercase font-bold text-slate-400">
-                    <ScanBarcode size={12} />
-                    <span>GS1 DataMatrix</span>
-                 </div>
-             </div>
-        </div>
-        
-        {/* Label Content */}
-        <div className="flex flex-row items-center gap-4">
-            {/* Barcode Image via API */}
-            <div className="shrink-0 border border-slate-100 p-1 rounded bg-white">
-                <img 
-                    src={`https://bwipjs-api.metafloor.com/?bcid=datamatrix&text=${encodedText}&scale=3&includetext`}
-                    alt="GS1 DataMatrix"
-                    className="w-24 h-24 object-contain"
-                />
-            </div>
+    <div className="bg-gradient-to-br from-slate-50 to-slate-200 border border-slate-400 p-2 w-full max-w-sm rounded shadow-sm relative overflow-hidden">
+        {/* Hologram Effect Overlay */}
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/diagmonds-light.png')] opacity-30 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-yellow-300/40 to-transparent rounded-bl-full pointer-events-none"></div>
 
-            {/* Human Readable Text */}
-            <div className="flex-1 text-xs font-mono space-y-1.5 text-slate-700">
-                <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 font-sans leading-none">GTIN (01)</span>
-                    <span className="font-bold">{gtin || '----------------'}</span>
+        <div className="relative z-10 bg-white/90 border border-slate-300 p-3 rounded flex flex-col gap-2">
+            
+            {/* Header: State Excise */}
+            <div className="flex justify-between items-center border-b border-slate-300 pb-2">
+                 <div className="flex items-center gap-1.5">
+                    <ShieldCheck size={18} className="text-indigo-800" />
+                    <div>
+                        <h4 className="font-black text-xs uppercase text-indigo-900 tracking-wider">State Excise</h4>
+                        <p className="text-[8px] text-indigo-700 font-bold">DUTY PAID LIQUOR</p>
+                    </div>
+                 </div>
+                 <div className="text-[8px] font-mono text-slate-500 text-right">
+                    FOR SALE IN<br/>STATE ONLY
+                 </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+                <div className="shrink-0 border border-slate-200 p-0.5 bg-white">
+                    <img 
+                        src={`https://bwipjs-api.metafloor.com/?bcid=datamatrix&text=${encodedText}&scale=2&includetext`}
+                        alt="Excise QR"
+                        className="w-20 h-20 object-contain"
+                    />
                 </div>
-                <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 font-sans leading-none">EXP (17)</span>
-                    <span className="font-bold">{expShort}</span>
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 font-sans leading-none">LOT (10)</span>
-                    <span className="font-bold">{lot || '---'}</span>
+
+                <div className="flex-1 space-y-1">
+                     <p className="text-xs font-bold text-slate-900 leading-tight">{productName || 'IMFL SPIRIT'}</p>
+                     <p className="text-[10px] font-mono text-slate-600">GTIN: {gtin}</p>
+                     <p className="text-[10px] font-mono text-slate-600">Batch: {lot}</p>
+                     <p className="text-[10px] font-mono text-slate-600">Exp: {expShort}</p>
                 </div>
             </div>
         </div>
         
         {/* Actions (Hidden in Print) */}
-        <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center print:hidden">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Label Preview</span>
+        <div className="mt-3 flex justify-between items-center print:hidden relative z-20">
+            <span className="text-[10px] font-bold text-slate-500 uppercase">Hologram Preview</span>
             <button 
                 type="button"
-                onClick={() => {
-                  window.print();
-                }}
-                className="text-blue-600 hover:text-blue-800 text-xs font-bold flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded transition-colors"
+                onClick={() => window.print()}
+                className="text-indigo-600 hover:text-indigo-800 text-xs font-bold flex items-center gap-1.5 bg-indigo-50 px-3 py-1.5 rounded transition-colors"
             >
                 <Printer size={14} /> 
-                <span>Print Label</span>
+                <span>Print</span>
             </button>
-        </div>
-        
-        {/* Print Only Footer */}
-        <div className="hidden print:block text-[8px] text-right mt-1">
-          Generated via E-Ledger Blockchain
         </div>
     </div>
   );

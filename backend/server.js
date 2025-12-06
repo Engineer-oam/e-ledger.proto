@@ -26,9 +26,10 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Database Initialization
-const db = new sqlite3.Database('./eledger.db', (err) => {
+const dbPath = path.resolve(__dirname, 'eledger.db');
+const db = new sqlite3.Database(dbPath, (err) => {
   if (err) console.error('DB Connection Error:', err.message);
-  else console.log('Connected to E-Ledger SQLite Database.');
+  else console.log('Connected to E-Ledger SQLite Database at', dbPath);
 });
 
 // Schema Setup
@@ -44,7 +45,6 @@ db.serialize(() => {
   )`);
 
   // Batches Table (The "Ledger")
-  // Storing trace and metadata as JSON strings for flexibility
   db.run(`CREATE TABLE IF NOT EXISTS batches (
     batchID TEXT PRIMARY KEY,
     gtin TEXT,
@@ -84,11 +84,27 @@ db.serialize(() => {
   )`);
 });
 
+// Helper for safe JSON parsing
+const safeParse = (str) => {
+  try {
+    return str ? JSON.parse(str) : [];
+  } catch (e) {
+    console.warn("JSON Parse Error:", e.message);
+    return [];
+  }
+};
+
 // --- API ROUTES ---
+
+// Health Check
+app.get('/', (req, res) => {
+  res.status(200).send('E-Ledger Backend is Running. API available at /api');
+});
 
 // 1. AUTHENTICATION
 app.post('/api/auth/login', (req, res) => {
   const { gln, password } = req.body;
+  console.log(`Login attempt for GLN: ${gln}`);
   db.get('SELECT * FROM users WHERE gln = ? AND password = ?', [gln, password], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(401).json({ error: 'Invalid GLN or password' });
@@ -99,6 +115,7 @@ app.post('/api/auth/login', (req, res) => {
 
 app.post('/api/auth/signup', (req, res) => {
   const { name, orgName, gln, role, password } = req.body;
+  console.log(`Signup attempt for GLN: ${gln}`);
   const id = uuidv4();
   db.run(
     'INSERT INTO users (id, name, role, gln, orgName, password) VALUES (?, ?, ?, ?, ?, ?)',
@@ -115,39 +132,43 @@ app.post('/api/auth/signup', (req, res) => {
 
 // 2. BATCH OPERATIONS
 app.get('/api/batches', (req, res) => {
-  const { gln, role } = req.query; // Filter by user GLN
+  const { gln, role } = req.query;
   
-  if (role === 'REGULATOR' || role === 'AUDITOR') {
-    db.all('SELECT * FROM batches', [], (err, rows) => {
-      if (err) return res.status(500).json({ error: err.message });
-      const parsed = rows.map(r => ({ ...r, trace: JSON.parse(r.trace) }));
+  const queryCallback = (err, rows) => {
+    if (err) {
+      console.error("Batch Fetch Error:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    const parsed = rows.map(r => ({ ...r, trace: safeParse(r.trace) }));
+    
+    // Filtering logic (if not regulator)
+    if (role === 'REGULATOR' || role === 'AUDITOR') {
       res.json(parsed);
-    });
-  } else {
-    // Basic privacy filter: Owner, Manufacturer, or Recipient
-    db.all(
-      'SELECT * FROM batches', 
-      [], 
-      (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        const filtered = rows.map(r => ({ ...r, trace: JSON.parse(r.trace) }))
-                             .filter(b => b.currentOwnerGLN === gln || b.manufacturerGLN === gln || b.intendedRecipientGLN === gln || b.trace.some(t => t.actorGLN === gln));
-        res.json(filtered);
-      }
-    );
-  }
+    } else {
+      const filtered = parsed.filter(b => 
+        b.currentOwnerGLN === gln || 
+        b.manufacturerGLN === gln || 
+        b.intendedRecipientGLN === gln || 
+        b.trace.some(t => t.actorGLN === gln)
+      );
+      res.json(filtered);
+    }
+  };
+
+  db.all('SELECT * FROM batches', [], queryCallback);
 });
 
 app.get('/api/batches/:id', (req, res) => {
   db.get('SELECT * FROM batches WHERE batchID = ?', [req.params.id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: 'Batch not found' });
-    res.json({ ...row, trace: JSON.parse(row.trace) });
+    res.json({ ...row, trace: safeParse(row.trace) });
   });
 });
 
 app.post('/api/batches', (req, res) => {
   const b = req.body;
+  console.log(`Creating batch: ${b.batchID}`);
   db.run(
     `INSERT INTO batches (batchID, gtin, lotNumber, expiryDate, quantity, unit, productName, manufacturerGLN, currentOwnerGLN, status, integrityHash, trace)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -159,7 +180,7 @@ app.post('/api/batches', (req, res) => {
   );
 });
 
-// Generic Batch Update (Transfer, Receive, Return, Sell)
+// Generic Batch Update
 app.put('/api/batches/:id', (req, res) => {
   const { status, currentOwnerGLN, intendedRecipientGLN, trace } = req.body;
   const id = req.params.id;
@@ -179,7 +200,7 @@ app.get('/api/sscc', (req, res) => {
   const { gln } = req.query;
   db.all('SELECT * FROM logistics_units WHERE creatorGLN = ?', [gln], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    const parsed = rows.map(r => ({ ...r, contents: JSON.parse(r.contents) }));
+    const parsed = rows.map(r => ({ ...r, contents: safeParse(r.contents) }));
     res.json(parsed);
   });
 });
@@ -219,5 +240,5 @@ app.get('/api/vrs', (req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`E-Ledger Solid Backend running on http://localhost:${PORT}`);
+  console.log(`E-Ledger Backend running on http://localhost:${PORT}`);
 });

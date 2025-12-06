@@ -8,8 +8,17 @@ const DELAY_MS = 800;
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // --- REMOTE API CONFIGURATION ---
-const isRemote = () => localStorage.getItem('ELEDGER_USE_REMOTE') === 'true';
-const API_URL = localStorage.getItem('ELEDGER_API_URL') || 'http://localhost:3001/api';
+const isRemote = () => {
+    try {
+        return localStorage.getItem('ELEDGER_USE_REMOTE') === 'true';
+    } catch { return false; }
+};
+
+const getApiUrl = () => {
+    try {
+        return localStorage.getItem('ELEDGER_API_URL') || 'http://localhost:3001/api';
+    } catch { return 'http://localhost:3001/api'; }
+};
 
 // --- LOCAL STORAGE HELPERS (Demo Mode) ---
 const getLedgerState = (): Batch[] => {
@@ -17,6 +26,7 @@ const getLedgerState = (): Batch[] => {
     const stored = localStorage.getItem(LEDGER_STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   } catch (e) {
+    console.error("Failed to parse Ledger State", e);
     return [];
   }
 };
@@ -63,6 +73,7 @@ export const LedgerService = {
   getBatches: async (user: User): Promise<Batch[]> => {
     if (isRemote()) {
       try {
+        const API_URL = getApiUrl();
         const res = await fetch(`${API_URL}/batches?gln=${user.gln}&role=${user.role}`);
         if (!res.ok) throw new Error('API Error');
         return await res.json();
@@ -89,6 +100,7 @@ export const LedgerService = {
   getBatchByID: async (batchID: string): Promise<Batch | undefined> => {
     if (isRemote()) {
       try {
+        const API_URL = getApiUrl();
         const res = await fetch(`${API_URL}/batches/${batchID}`);
         if (res.ok) return await res.json();
       } catch(e) {}
@@ -137,6 +149,7 @@ export const LedgerService = {
     };
     
     if (isRemote()) {
+      const API_URL = getApiUrl();
       await fetch(`${API_URL}/batches`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -154,6 +167,7 @@ export const LedgerService = {
   // Generic update helper
   updateBatch: async (batch: Batch) => {
     if (isRemote()) {
+      const API_URL = getApiUrl();
       await fetch(`${API_URL}/batches/${batch.batchID}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -355,6 +369,7 @@ export const LedgerService = {
   getLogisticsUnits: async (user: User): Promise<LogisticsUnit[]> => {
     if (isRemote()) {
         try {
+            const API_URL = getApiUrl();
             const res = await fetch(`${API_URL}/sscc?gln=${user.gln}`);
             return await res.json();
         } catch(e) {}
@@ -375,6 +390,7 @@ export const LedgerService = {
     };
 
     if (isRemote()) {
+        const API_URL = getApiUrl();
         await fetch(`${API_URL}/sscc`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -392,8 +408,7 @@ export const LedgerService = {
   submitVerificationRequest: async (gtin: string, lot: string, requester: User): Promise<VerificationRequest> => {
     await delay(DELAY_MS);
     // Note: VRS logic usually requires complex checks, for hybrid we'll stick to mostly local or simple API pass
-    const batch = await LedgerService.getBatchByID(`${gtin}`); // Simplified lookup
-    // ... (logic similar to before, omitted for brevity but conceptually API should handle)
+    const batch = await LedgerService.getBatchByID(`${gtin}`); 
     
     // Fallback to purely local construction for stability in demo
     const req: VerificationRequest = {
@@ -414,6 +429,7 @@ export const LedgerService = {
   getVerificationHistory: async (user: User): Promise<VerificationRequest[]> => {
     if (isRemote()) {
         try {
+            const API_URL = getApiUrl();
             const res = await fetch(`${API_URL}/vrs?gln=${user.gln}`);
             return await res.json();
         } catch(e) {}

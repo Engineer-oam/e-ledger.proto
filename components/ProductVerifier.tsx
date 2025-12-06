@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LedgerService } from '../services/ledgerService';
 import { Batch } from '../types';
-import { Search, ShieldCheck, XCircle, Package, Clock, MapPin, CheckCircle2, Fingerprint, Camera } from 'lucide-react';
+import { Search, ShieldCheck, XCircle, Clock, MapPin, CheckCircle2, Fingerprint, Camera, Stamp } from 'lucide-react';
 import QRScanner from './QRScanner';
 
 const ProductVerifier: React.FC = () => {
@@ -23,9 +23,7 @@ const ProductVerifier: React.FC = () => {
     setSearched(true);
 
     try {
-      // Try searching by Hash first (Digital Twin), then Batch ID
       let batch = await LedgerService.verifyByHash(searchQuery.trim());
-      
       if (!batch) {
         batch = await LedgerService.getBatchByID(searchQuery.trim());
       }
@@ -34,10 +32,10 @@ const ProductVerifier: React.FC = () => {
         setResult(batch);
         setQuery(searchQuery.trim());
       } else {
-        setError('No record found. The product ID or Hash may be invalid or not yet registered.');
+        setError('Invalid Hologram. This bottle may be illicit or counterfeit.');
       }
     } catch (err) {
-      setError('An error occurred during verification.');
+      setError('Verification Error.');
     } finally {
       setLoading(false);
     }
@@ -60,10 +58,10 @@ const ProductVerifier: React.FC = () => {
 
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center p-3 bg-indigo-100 rounded-full mb-4">
-          <ShieldCheck size={32} className="text-indigo-600" />
+          <Stamp size={32} className="text-indigo-600" />
         </div>
-        <h2 className="text-3xl font-bold text-slate-900">Product Authenticity Check</h2>
-        <p className="text-slate-500 mt-2">Enter a Batch ID or Integrity Hash to verify provenance.</p>
+        <h2 className="text-3xl font-bold text-slate-900">Excise Hologram Verify</h2>
+        <p className="text-slate-500 mt-2">Scan QR or enter ID to check Duty Paid status.</p>
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200 mb-8">
@@ -74,14 +72,14 @@ const ProductVerifier: React.FC = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. BATCH-2024... or Hash..."
+              placeholder="Enter Batch ID or Hash..."
               className="w-full pl-12 pr-12 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none transition font-mono text-sm"
             />
             <button
                type="button"
                onClick={() => setShowScanner(true)}
                className="absolute right-3 top-2.5 p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-               title="Use Camera"
+               title="Scan"
             >
                <Camera size={20} />
             </button>
@@ -91,14 +89,12 @@ const ProductVerifier: React.FC = () => {
             disabled={loading || !query}
             className="w-full md:w-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl transition-colors shadow-md"
           >
-            {loading ? 'Verifying...' : 'Verify'}
+            {loading ? 'Checking...' : 'Verify'}
           </button>
         </form>
 
         {searched && !loading && !result && !error && (
-           <div className="p-12 text-center text-slate-400">
-             Enter an ID to start verification.
-           </div>
+           <div className="p-12 text-center text-slate-400">Scan result will appear here.</div>
         )}
 
         {error && (
@@ -111,66 +107,57 @@ const ProductVerifier: React.FC = () => {
 
         {result && (
           <div className="bg-white animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header: Verified Banner */}
-            <div className="bg-green-600 text-white p-6 flex items-center justify-between">
+            <div className={`p-6 flex items-center justify-between ${result.dutyPaid ? 'bg-green-600' : 'bg-amber-500'} text-white`}>
               <div>
-                <div className="flex items-center space-x-2 font-bold text-green-100 uppercase tracking-wider text-xs mb-1">
+                <div className="flex items-center space-x-2 font-bold opacity-90 uppercase tracking-wider text-xs mb-1">
                   <CheckCircle2 size={14} />
-                  <span>Officially Verified</span>
+                  <span>{result.dutyPaid ? 'Official & Duty Paid' : 'Bonded / Duty Unpaid'}</span>
                 </div>
                 <h3 className="text-2xl font-bold">{result.productName}</h3>
               </div>
               <div className="text-right hidden sm:block">
-                <p className="text-green-200 text-xs">Current Status</p>
-                <p className="text-xl font-bold uppercase tracking-wide">{result.status.replace('_', ' ')}</p>
+                <p className="opacity-80 text-xs">Category</p>
+                <p className="text-xl font-bold uppercase tracking-wide">{result.category || 'LIQUOR'}</p>
               </div>
             </div>
 
-            {/* Content Grid */}
             <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-              
-              {/* Product Details */}
               <div className="space-y-6">
-                <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-2">Product Details</h4>
-                
+                <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-2">Bottle Details</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 bg-slate-50 rounded-lg">
-                    <p className="text-xs text-slate-500 uppercase">GTIN</p>
-                    <p className="font-mono font-medium text-slate-800">{result.gtin}</p>
+                    <p className="text-xs text-slate-500 uppercase">Alcohol Content</p>
+                    <p className="font-medium text-slate-800">{result.alcoholContent}% ABV</p>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-lg">
-                    <p className="text-xs text-slate-500 uppercase">Batch / Lot</p>
-                    <p className="font-mono font-medium text-slate-800">{result.lotNumber}</p>
-                  </div>
-                  <div className="p-3 bg-slate-50 rounded-lg">
-                    <p className="text-xs text-slate-500 uppercase">Expiry Date</p>
-                    <p className="font-medium text-slate-800">{result.expiryDate}</p>
-                  </div>
-                  <div className="p-3 bg-slate-50 rounded-lg">
-                    <p className="text-xs text-slate-500 uppercase">Quantity</p>
+                    <p className="text-xs text-slate-500 uppercase">Volume</p>
                     <p className="font-medium text-slate-800">{result.quantity} {result.unit}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <p className="text-xs text-slate-500 uppercase">Batch ID</p>
+                    <p className="font-mono text-xs font-bold text-slate-800 break-all">{result.batchID}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <p className="text-xs text-slate-500 uppercase">Expiry / Date</p>
+                    <p className="font-medium text-slate-800">{result.expiryDate}</p>
                   </div>
                 </div>
 
                 {result.integrityHash && (
-                  <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                    <div className="flex items-center space-x-2 text-blue-700 mb-2">
+                  <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+                    <div className="flex items-center space-x-2 text-indigo-700 mb-2">
                       <Fingerprint size={18} />
-                      <span className="font-bold text-sm">Digital Twin Match</span>
+                      <span className="font-bold text-sm">Hologram Hash Match</span>
                     </div>
-                    <p className="text-xs text-blue-600 mb-2">
-                      Cryptographic hash matches the immutable ledger record.
-                    </p>
-                    <p className="font-mono text-[10px] break-all bg-white p-2 rounded border border-blue-200 text-slate-500">
+                    <p className="font-mono text-[10px] break-all bg-white p-2 rounded border border-indigo-200 text-slate-500">
                       {result.integrityHash}
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Journey / Trace */}
               <div>
-                <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">Journey Path</h4>
+                <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">Supply Chain Trace</h4>
                 <div className="space-y-6 relative pl-6 border-l-2 border-slate-200">
                   {result.trace.sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()).map((event, idx) => (
                     <div key={idx} className="relative">

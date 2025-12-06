@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { User, Batch, UserRole, BatchStatus, GSTDetails, EWayBill, ReturnReason } from '../types';
 import { LedgerService } from '../services/ledgerService';
 import { AuthService } from '../services/authService';
-import { Plus, Search, Eye, ArrowRight, Package, Zap, Truck, ArrowUpRight, ArrowDownLeft, Send, CheckSquare, Square, Layers, RotateCcw } from 'lucide-react';
+import { Plus, Search, Eye, ArrowRight, Package, Zap, Truck, ArrowUpRight, ArrowDownLeft, Send, CheckSquare, Square, Layers, RotateCcw, Wine, Stamp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BatchLabel from './BatchLabel';
 import TransferModal from './TransferModal'; 
@@ -18,22 +17,22 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   
-  // Selection State
   const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>([]);
-  
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedBatchForReturn, setSelectedBatchForReturn] = useState<Batch | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Form State
+  // Form State including Excise Fields
   const [formData, setFormData] = useState({
     gtin: '',
     productName: '',
     lotNumber: '',
     expiryDate: '',
     quantity: 0,
-    unit: 'boxes'
+    unit: 'Cases',
+    alcoholContent: 42.8,
+    category: 'IMFL',
   });
 
   // Return Form State
@@ -52,10 +51,8 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Bulk Selection Logic
   const toggleSelection = (id: string) => {
     if (selectedBatchIds.includes(id)) {
       setSelectedBatchIds(prev => prev.filter(bid => bid !== id));
@@ -72,10 +69,10 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
     e.preventDefault();
     try {
       const batchID = await LedgerService.createBatch(formData, user);
-      toast.success(`Batch ${batchID} minted successfully!`);
+      toast.success(`Batch ${batchID} Distilled & Registered!`);
       setShowCreateModal(false);
-      fetchData(); // Refresh list
-      setFormData({ gtin: '', productName: '', lotNumber: '', expiryDate: '', quantity: 0, unit: 'boxes' });
+      fetchData(); 
+      setFormData({ gtin: '', productName: '', lotNumber: '', expiryDate: '', quantity: 0, unit: 'Cases', alcoholContent: 42.8, category: 'IMFL' });
     } catch (err: any) {
       toast.error(err.message || 'Failed to create batch');
     }
@@ -95,9 +92,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
             ewbPartial,
             payment
         );
-        toast.success(`Transferred ${batchesToTransfer.length} items to ${toName}`);
-        // Modal handles closing itself or switching to print view
-        // But we need to refresh data and clear selection
+        toast.success(`Dispatched ${batchesToTransfer.length} loads to ${toName}`);
         fetchData();
         setSelectedBatchIds([]);
     } catch (err: any) {
@@ -117,10 +112,9 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
         user,
         returnData.refundAmount
       );
-      toast.success(`Batch ${selectedBatchForReturn.batchID} marked as RETURNED.`);
+      toast.success(`Batch marked as RETURNED.`);
       setShowReturnModal(false);
       setSelectedBatchForReturn(null);
-      setReturnData({ toGLN: '', reason: ReturnReason.DAMAGED, refundAmount: 0 });
       fetchData();
     } catch (err: any) {
       toast.error(err.message || 'Return failed');
@@ -129,31 +123,39 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
 
   const handleAutoFill = () => {
     const products = [
-      'Amoxicillin 500mg', 'Ibuprofen 200mg', 'Paracetamol 650mg', 'Insulin Glargine', 'Covid-19 Vaccine'
+      'Royal Reserve Whisky', 'Old Monk Rum', 'Kingfisher Lager', 'Sula Shiraz', 'Blue Riband Gin'
     ];
-    const randomProduct = products[Math.floor(Math.random() * products.length)];
-    const randomLot = `LOT-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    const categories = ['IMFL', 'IMFL', 'BEER', 'WINE', 'IMFL'];
+    const idx = Math.floor(Math.random() * products.length);
+    const randomProduct = products[idx];
+    const randomCategory = categories[idx];
+    
+    const randomLot = `VAT-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`;
     const futureDate = new Date();
-    futureDate.setFullYear(futureDate.getFullYear() + 1);
+    futureDate.setFullYear(futureDate.getFullYear() + 2);
     
     setFormData({
       gtin: AuthService.generateGTIN(),
       productName: randomProduct,
       lotNumber: randomLot,
       expiryDate: futureDate.toISOString().split('T')[0],
-      quantity: Math.floor(Math.random() * 5000) + 100,
-      unit: 'boxes'
+      quantity: Math.floor(Math.random() * 500) + 50,
+      unit: 'Cases',
+      alcoholContent: randomCategory === 'BEER' ? 6.5 : 42.8,
+      category: randomCategory
     });
-    toast.info('Form auto-filled');
+    toast.info('Distillery form auto-filled');
   };
 
   const getStatusColor = (status: BatchStatus) => {
     switch (status) {
-      case BatchStatus.CREATED: return 'bg-slate-100 text-slate-600';
+      case BatchStatus.CREATED: return 'bg-slate-100 text-slate-600'; // Distilled
+      case BatchStatus.BONDED: return 'bg-amber-100 text-amber-700';
+      case BatchStatus.DUTY_PAID: return 'bg-emerald-100 text-emerald-700';
       case BatchStatus.IN_TRANSIT: return 'bg-blue-100 text-blue-600';
-      case BatchStatus.RECEIVED: return 'bg-emerald-100 text-emerald-600';
-      case BatchStatus.SOLD: return 'bg-indigo-100 text-indigo-600';
-      case BatchStatus.RETURNED: return 'bg-orange-100 text-orange-600';
+      case BatchStatus.RECEIVED: return 'bg-indigo-100 text-indigo-600';
+      case BatchStatus.SOLD: return 'bg-gray-100 text-gray-500';
+      case BatchStatus.QUARANTINED: return 'bg-red-100 text-red-600';
       default: return 'bg-gray-100 text-gray-600';
     }
   };
@@ -162,8 +164,8 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-            <h2 className="text-2xl font-bold text-slate-800">Batch Inventory</h2>
-            <p className="text-sm text-slate-500">Manage stock and track movements</p>
+            <h2 className="text-2xl font-bold text-slate-800">Spirits Inventory</h2>
+            <p className="text-sm text-slate-500">Track distillates, duty status, and shipments</p>
         </div>
         
         <div className="flex gap-2 w-full sm:w-auto">
@@ -178,17 +180,17 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                    onClick={() => setActiveTab('shipments')}
                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'shipments' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                 >
-                    Shipment Logs
+                    Logistics Logs
                 </button>
              </div>
 
             {user.role === UserRole.MANUFACTURER && (
             <button 
                 onClick={() => setShowCreateModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-sm ml-auto"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-sm ml-auto"
             >
                 <Plus size={18} />
-                <span className="hidden sm:inline">Create Batch</span>
+                <span className="hidden sm:inline">Register Batch</span>
             </button>
             )}
         </div>
@@ -196,18 +198,16 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
 
       {activeTab === 'inventory' && (
       <>
-        {/* Actions Bar */}
         <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 mb-6 flex flex-col sm:flex-row items-center gap-4 justify-between">
             <div className="flex items-center space-x-4 w-full sm:w-auto flex-1">
                 <Search className="text-slate-400 shrink-0" size={20} />
                 <input 
                     type="text" 
-                    placeholder="Search inventory..." 
+                    placeholder="Search stock..." 
                     className="flex-1 outline-none text-slate-700 placeholder-slate-400 min-w-0"
                 />
             </div>
             
-            {/* Bulk Action Button */}
             {selectedBatchIds.length > 0 && (
                 <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end animate-in fade-in slide-in-from-right-2">
                     <span className="text-sm font-semibold text-slate-600">{selectedBatchIds.length} Selected</span>
@@ -216,25 +216,24 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                         className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-md"
                     >
                         <Layers size={16} />
-                        <span>Bulk Transfer</span>
+                        <span>Dispatch / Transfer</span>
                     </button>
                 </div>
             )}
         </div>
 
-        {/* Table */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             {loading ? (
-            <div className="p-8 text-center text-slate-500">Syncing with Ledger...</div>
+            <div className="p-8 text-center text-slate-500">Syncing with Excise Chain...</div>
             ) : (
             <div className="overflow-x-auto">
                 <table className="w-full text-left min-w-[800px]">
                 <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
                     <th className="px-4 py-4 w-10"></th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Batch ID / Product</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Brand / Details</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">GTIN</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Expiry</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Category</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Action</th>
                     </tr>
@@ -261,23 +260,22 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                             <td className="px-6 py-4">
                             <div className="flex items-center space-x-3">
                                 <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
-                                <Package size={20} />
+                                <Wine size={20} />
                                 </div>
                                 <div>
                                 <p className="font-medium text-slate-800">{batch.productName}</p>
-                                <p className="text-xs text-slate-500 font-mono">{batch.batchID}</p>
+                                <p className="text-xs text-slate-500 font-mono">{batch.batchID} • {batch.alcoholContent}% ABV</p>
                                 </div>
                             </div>
                             </td>
                             <td className="px-6 py-4 font-mono text-sm text-slate-600">{batch.gtin}</td>
-                            <td className="px-6 py-4 text-sm text-slate-600">{batch.expiryDate}</td>
+                            <td className="px-6 py-4 text-sm text-slate-600">{batch.category}</td>
                             <td className="px-6 py-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium border border-opacity-20 ${getStatusColor(batch.status)} border-current whitespace-nowrap`}>
                                 {batch.status.replace('_', ' ')}
                             </span>
                             </td>
                             <td className="px-6 py-4 text-right flex items-center justify-end space-x-4">
-                                {/* Actions */}
                                 {canTransfer && (
                                     <>
                                         <button 
@@ -285,7 +283,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                                             className="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-wider flex items-center gap-1"
                                         >
                                             <Send size={14} />
-                                            <span>Transfer</span>
+                                            <span>Move</span>
                                         </button>
                                         <button 
                                             onClick={() => { 
@@ -315,34 +313,25 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                 </table>
             </div>
             )}
-            {!loading && batches.length === 0 && (
-            <div className="p-12 text-center">
-                <div className="inline-block p-4 bg-slate-50 rounded-full mb-4">
-                <Package size={40} className="text-slate-300" />
-                </div>
-                <h3 className="text-lg font-medium text-slate-900">No batches found</h3>
-                <p className="text-slate-500">Get started by creating a new batch or waiting for a shipment.</p>
-            </div>
-            )}
         </div>
       </>
       )}
 
-      {/* Shipment Logs Tab */}
+      {/* Shipment Logs Tab - Keeping logic mostly same but updating UI text */}
       {activeTab === 'shipments' && (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex items-center gap-3">
                 <Truck className="text-blue-600" />
-                <h3 className="font-bold text-slate-800">Transfer & Shipment History</h3>
+                <h3 className="font-bold text-slate-800">Transport & Permits</h3>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase">
                         <tr>
                             <th className="px-6 py-4">Direction</th>
-                            <th className="px-6 py-4">Partner (GLN)</th>
-                            <th className="px-6 py-4">Product / Batch</th>
-                            <th className="px-6 py-4">Compliance Doc</th>
+                            <th className="px-6 py-4">Licensee (GLN)</th>
+                            <th className="px-6 py-4">Brand / Batch</th>
+                            <th className="px-6 py-4">E-Way Bill</th>
                             <th className="px-6 py-4 text-right">Status</th>
                         </tr>
                     </thead>
@@ -412,48 +401,62 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
         </div>
       )}
 
-      {/* Create Modal */}
+      {/* Create Modal - Adapted for Distillery */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
             <div className="flex-1 p-6 md:p-8 flex flex-col overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-xl text-slate-800">Mint New Batch</h3>
+                <h3 className="font-bold text-xl text-slate-800">Register New Spirit Batch</h3>
                 <button onClick={() => setShowCreateModal(false)} className="md:hidden text-slate-400 hover:text-slate-600">✕</button>
               </div>
               <div className="mb-4">
                 <button onClick={handleAutoFill} className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors border border-indigo-200">
                   <Zap size={16} className="text-indigo-600 fill-current" />
-                  <span>Auto-Fill Form (Fast Mode)</span>
+                  <span>Auto-Fill (Simulate Distillery Output)</span>
                 </button>
               </div>
               <form onSubmit={handleCreate} className="space-y-5 flex-1">
-                <div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Product Name</label><input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.productName} onChange={e => setFormData({...formData, productName: e.target.value})} placeholder="e.g. Amoxicillin 500mg" /></div>
-                <div className="grid grid-cols-2 gap-4"><div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">GTIN</label><input required maxLength={14} minLength={14} type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition font-mono" value={formData.gtin} onChange={e => setFormData({...formData, gtin: e.target.value})} placeholder="00089012345678" /></div><div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Lot Number</label><input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.lotNumber} onChange={e => setFormData({...formData, lotNumber: e.target.value})} placeholder="LOT-2024-X" /></div></div>
-                <div className="grid grid-cols-2 gap-4"><div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Expiry Date</label><input required type="date" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.expiryDate} onChange={e => setFormData({...formData, expiryDate: e.target.value})} /></div><div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Quantity</label><input required type="number" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.quantity} onChange={e => setFormData({...formData, quantity: parseInt(e.target.value)})} /></div></div>
-                <div className="pt-6 flex justify-end space-x-3 mt-auto"><button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors">Cancel</button><button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-all transform hover:scale-[1.02]">Mint Batch on Chain</button></div>
+                <div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Brand / Product Name</label><input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.productName} onChange={e => setFormData({...formData, productName: e.target.value})} placeholder="e.g. Royal Reserve Whisky" /></div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Category</label>
+                     <select className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                       <option value="IMFL">IMFL (Foreign Liquor)</option>
+                       <option value="BEER">Beer</option>
+                       <option value="WINE">Wine</option>
+                       <option value="COUNTRY_LIQUOR">Country Liquor</option>
+                       <option value="SPIRIT">Rectified Spirit (ENA)</option>
+                     </select>
+                   </div>
+                   <div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Alcohol Content (%)</label><input required type="number" step="0.1" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.alcoholContent} onChange={e => setFormData({...formData, alcoholContent: parseFloat(e.target.value)})} /></div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4"><div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">GTIN</label><input required maxLength={14} minLength={14} type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition font-mono" value={formData.gtin} onChange={e => setFormData({...formData, gtin: e.target.value})} placeholder="00089012345678" /></div><div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Vat / Lot Number</label><input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.lotNumber} onChange={e => setFormData({...formData, lotNumber: e.target.value})} placeholder="VAT-2024-X" /></div></div>
+                <div className="grid grid-cols-2 gap-4"><div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Bottling Date</label><input required type="date" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.expiryDate} onChange={e => setFormData({...formData, expiryDate: e.target.value})} /></div><div><label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Quantity (Cases)</label><input required type="number" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition" value={formData.quantity} onChange={e => setFormData({...formData, quantity: parseInt(e.target.value)})} /></div></div>
+                
+                <div className="pt-6 flex justify-end space-x-3 mt-auto"><button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors">Cancel</button><button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-all transform hover:scale-[1.02]">Issue Excise Holograms</button></div>
               </form>
             </div>
             <div className="w-full md:w-80 bg-slate-50 border-t md:border-t-0 md:border-l border-slate-200 p-6 md:p-8 flex flex-col items-center justify-center">
-                <div className="mb-6 text-center"><h4 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Live Label Preview</h4><p className="text-xs text-slate-400 mt-1">GS1-Compliant DataMatrix</p></div>
+                <div className="mb-6 text-center"><h4 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Security Feature</h4><p className="text-xs text-slate-400 mt-1">Digital Excise Hologram</p></div>
                 <BatchLabel gtin={formData.gtin} lot={formData.lotNumber} expiry={formData.expiryDate} productName={formData.productName} />
-                <div className="mt-8 text-center px-4"><p className="text-xs text-slate-400 leading-relaxed">This barcode encodes the GTIN, Expiry, and Lot number standard Application Identifiers (AIs).</p></div>
+                <div className="mt-8 text-center px-4"><p className="text-xs text-slate-400 leading-relaxed">This QR represents the State Excise Hologram. It must be affixed to every case before leaving the bonded warehouse.</p></div>
             </div>
           </div>
         </div>
       )}
 
-      {/* NEW Transfer Modal: Handles both Single and Bulk with EWB and Payment */}
       {showTransferModal && selectedBatchIds.length > 0 && (
         <TransferModal 
-          batches={getSelectedBatches()} // Pass array
+          batches={getSelectedBatches()} 
           onClose={() => { setShowTransferModal(false); setSelectedBatchIds([]); }}
           onSubmit={handleTransferSubmit}
           currentUser={user}
         />
       )}
 
-      {/* Return Modal */}
       {showReturnModal && selectedBatchForReturn && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
@@ -476,7 +479,6 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                       <input 
                         required
                         className="w-full border border-slate-300 rounded-lg px-4 py-2 font-mono text-sm focus:ring-2 focus:ring-orange-500 outline-none"
-                        placeholder="Manufacturer GLN"
                         value={returnData.toGLN}
                         onChange={e => setReturnData({...returnData, toGLN: e.target.value})}
                       />
@@ -515,7 +517,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                         type="submit"
                         className="px-4 py-2 bg-orange-500 text-white rounded-lg font-bold hover:bg-orange-600 shadow-md"
                       >
-                          Process Return
+                          Confirm Return
                       </button>
                   </div>
               </form>
