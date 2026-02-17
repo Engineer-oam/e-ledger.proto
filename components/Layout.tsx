@@ -33,8 +33,16 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-white flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-white flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} shadow-2xl lg:shadow-none`}>
         <div className="p-6 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center space-x-3">
             <div className="bg-white p-1 rounded-xl shadow-lg shadow-emerald-500/20">
@@ -45,12 +53,12 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Pharma Hub</p>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-400">
+          <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-400 hover:text-white transition-colors">
             <X size={24} />
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
           <NavItem to="/dashboard" icon={LayoutDashboard} label="Network Panel" active={location.pathname === '/dashboard'} />
           <NavItem to="/batches" icon={Pill} label="Drug Inventory" active={location.pathname === '/batches'} />
           <NavItem to="/blockchain" icon={LinkIcon} label="Chain Explorer" active={location.pathname === '/blockchain'} />
@@ -76,16 +84,16 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsOpen(true)} className="lg:hidden p-2 text-slate-600">
+            <button onClick={() => setIsOpen(true)} className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
               <Menu size={24} />
             </button>
-            <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">
+            <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight truncate">
               {location.pathname.replace('/', '').replace('-', ' ') || 'Dashboard'}
             </h2>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
              <div className="hidden sm:flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
                <Activity size={14} className="text-emerald-600" />
                <span className="text-[10px] font-black uppercase text-emerald-800">DSCSA / GS1 Ready</span>
@@ -97,7 +105,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
           {children}
         </main>
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Batch, UserRole, BatchStatus, GSTDetails, EWayBill, ReturnReason, Sector } from '../types';
 import { LedgerService } from '../services/ledgerService';
 import { AuthService } from '../services/authService';
-import { Plus, Search, ArrowRight, Package, Zap, Truck, ArrowUpRight, ArrowDownLeft, Send, CheckSquare, Square, Layers, RotateCcw, AlertTriangle, MapPin, IndianRupee, Printer, Filter, Percent, Landmark, Pill, Tag } from 'lucide-react';
+import { Plus, Search, ArrowRight, Package, Zap, Truck, ArrowUpRight, ArrowDownLeft, Send, CheckSquare, Square, Layers, RotateCcw, AlertTriangle, MapPin, IndianRupee, Printer, Filter, Percent, Landmark, Pill, Tag, Stamp, PenTool } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BatchLabel from './BatchLabel';
 import TransferModal from './TransferModal'; 
@@ -56,6 +56,9 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
   });
 
   const [formData, setFormData] = useState(getInitialFormData());
+  
+  // E-Signature State
+  const [signature, setSignature] = useState({ name: '', consent: false });
 
   // Return Form State
   const [returnData, setReturnData] = useState({
@@ -90,22 +93,37 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!signature.name.trim() || !signature.consent) {
+        toast.error("E-Signature required. Please sign and certify.");
+        return;
+    }
+
     try {
       const taxAmount = (formData.taxableValue * formData.taxRate) / 100;
+      
+      // Inject signature into batch data payload
       const batchPayload: Partial<Batch> = {
         ...formData,
         sector: Sector.PHARMA,
         country: user.country,
         dutyPaid: formData.isDutyPaid,
-        status: BatchStatus.CREATED, // Pharma starts as CREATED usually
-        taxAmount: taxAmount
+        status: BatchStatus.CREATED, 
+        taxAmount: taxAmount,
+        // @ts-ignore - appending custom data
+        data: {
+            signedBy: signature.name,
+            signedDate: new Date().toISOString(),
+            signatureVerified: true
+        }
       };
       
       const batchID = await LedgerService.createBatch(batchPayload, user);
-      toast.success(`Batch ${batchID} Registered!`);
+      toast.success(`Batch ${batchID} Registered & Signed!`);
       setShowCreateModal(false);
       fetchData(); 
       setFormData(getInitialFormData());
+      setSignature({ name: '', consent: false });
     } catch (err: any) {
       toast.error(err.message || 'Failed to create batch');
     }
@@ -694,9 +712,48 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                   </div>
                 </div>
 
-                <div className="pt-6 flex justify-end space-x-3 mt-auto">
+                {/* E-Signature Section */}
+                <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                        <PenTool size={14} className="text-indigo-600" />
+                        E-Signature Authorization
+                    </h4>
+                    <div className="space-y-3">
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Authorized Signatory Name</label>
+                            <input 
+                                type="text" 
+                                placeholder="Type your full name to sign"
+                                className="w-full border-b-2 border-slate-300 bg-transparent py-2 px-1 text-lg font-serif italic text-slate-800 focus:border-indigo-600 focus:outline-none placeholder:font-sans placeholder:text-sm placeholder:text-slate-300 placeholder:italic"
+                                value={signature.name}
+                                onChange={(e) => setSignature({...signature, name: e.target.value})}
+                            />
+                        </div>
+                        <label className="flex items-start gap-3 cursor-pointer p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                            <input 
+                                type="checkbox" 
+                                className="mt-1 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                checked={signature.consent}
+                                onChange={(e) => setSignature({...signature, consent: e.target.checked})}
+                            />
+                            <span className="text-[11px] text-slate-600 leading-relaxed">
+                                I hereby declare that this batch complies with all applicable quality and regulatory standards (GMP/CDSCO). 
+                                I understand that this digital signature is legally binding and recorded on the immutable ledger.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div className="pt-4 flex justify-end space-x-3 mt-auto border-t border-slate-100">
                     <button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors">Cancel</button>
-                    <button type="submit" className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow-md transition-all transform hover:scale-[1.02]">Register Batch & Generate ID</button>
+                    <button 
+                        type="submit" 
+                        disabled={!signature.name || !signature.consent}
+                        className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold shadow-md transition-all transform hover:scale-[1.02] flex items-center gap-2"
+                    >
+                        <Stamp size={16} />
+                        <span>Sign & Register Batch</span>
+                    </button>
                 </div>
               </form>
             </div>

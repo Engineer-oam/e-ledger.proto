@@ -139,7 +139,7 @@ const Signup: React.FC = () => {
       
       <div className="max-w-5xl w-full bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(13,148,136,0.15)] overflow-hidden flex flex-col md:flex-row max-h-[90vh] min-h-[650px]">
         
-        {/* Left Sidebar - Branding & Trust */}
+        {/* Left Sidebar - Branding & Trust (Hidden on Mobile) */}
         <div className="hidden md:flex w-[35%] bg-[#0f172a] p-10 text-white flex-col justify-between relative overflow-hidden">
           {/* Background FX */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-teal-900/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
@@ -196,7 +196,24 @@ const Signup: React.FC = () => {
 
         {/* Right Form Area */}
         <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
-          <div className="p-8 pb-2 shrink-0 flex justify-end">
+          
+          {/* Mobile Header (Visible only on small screens) */}
+          <div className="md:hidden bg-slate-900 p-6 text-white shrink-0 relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+             <div className="relative z-10">
+               <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                    <Logo size="sm" className="scale-75" />
+                  </div>
+                  <span className="font-bold text-sm tracking-tight">E-Ledger India</span>
+               </div>
+               <h2 className="text-xl font-black">
+                 Join the <span className="text-teal-400">Network.</span>
+               </h2>
+             </div>
+          </div>
+
+          <div className="p-4 md:p-8 pb-2 shrink-0 flex justify-end">
              <div className="text-right">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Already a partner?</p>
                 <Link to="/login" className="text-sm font-bold text-teal-700 hover:text-teal-900 flex items-center justify-end gap-1 group">
@@ -205,7 +222,7 @@ const Signup: React.FC = () => {
              </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-8 md:px-12 pb-8 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto px-6 md:px-12 pb-8 custom-scrollbar">
           <form onSubmit={handleSubmit} className="h-full flex flex-col">
             
             {/* STEP 1: JURISDICTION */}
@@ -250,7 +267,7 @@ const Signup: React.FC = () => {
                     <p className="text-xs text-slate-500 mt-1">Provide your legal business details for KYC.</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-500 uppercase">Authorized Person</label>
                         <div className="relative">

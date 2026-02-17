@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../types';
-import { AuthService } from '../services/authService';
-import { UserCircle, Building2, MapPin, Shield, Save, Loader2, Cpu, ArrowRight, Tags } from 'lucide-react';
+import { 
+  UserCircle, Building2, MapPin, Shield, Save, Loader2, 
+  Cpu, ArrowRight, Tags, Mail, Phone, Globe, CreditCard, 
+  Lock, Key, LogOut, History, Bell, Database
+} from 'lucide-react';
 import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom';
 
 interface UserProfileProps {
   user: User;
@@ -11,9 +13,12 @@ interface UserProfileProps {
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
+  const [activeTab, setActiveTab] = useState<'details' | 'security'>('details');
   const [formData, setFormData] = useState({
     name: user.name,
-    orgName: user.orgName
+    orgName: user.orgName,
+    email: 'authorized.user@' + user.orgName.toLowerCase().replace(/\s/g, '') + '.com', // Simulated
+    phone: '+91 98765 43210' // Simulated
   });
   const [loading, setLoading] = useState(false);
 
@@ -24,190 +29,277 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    try {
-      // In a real app, this would be an API call
-      const updatedUser = {
-        ...user,
-        name: formData.name,
-        orgName: formData.orgName
-      };
-      onUpdate(updatedUser);
+    // Simulate API call
+    setTimeout(() => {
+      onUpdate({ ...user, name: formData.name, orgName: formData.orgName });
       toast.success('Profile updated successfully.');
-    } catch (error) {
-      toast.error('Failed to update profile.');
-    } finally {
       setLoading(false);
-    }
+    }, 800);
   };
 
-  const isAuthority = user.role === UserRole.REGULATOR || user.role === UserRole.AUDITOR;
-
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">User Profile</h2>
-          <p className="text-slate-500 text-sm">Manage account and organization details</p>
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Header Banner */}
+      <div className="relative bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-8 overflow-hidden text-white shadow-xl">
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+           <Shield size={200} />
+        </div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+           <div className="relative">
+              <div className="w-28 h-28 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-4xl font-bold border-4 border-white/20 shadow-2xl">
+                {user.name.charAt(0)}
+              </div>
+              <div className="absolute bottom-1 right-1 w-8 h-8 bg-emerald-500 rounded-full border-4 border-slate-900 flex items-center justify-center">
+                 <Shield size={14} className="fill-white text-emerald-500" />
+              </div>
+           </div>
+           
+           <div className="text-center md:text-left space-y-2">
+              <h1 className="text-3xl font-black tracking-tight">{user.name}</h1>
+              <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                 <span className="bg-indigo-500/20 border border-indigo-400/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-indigo-200">
+                    {user.role.replace('_', ' ')}
+                 </span>
+                 <span className="bg-emerald-500/20 border border-emerald-400/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-emerald-200 flex items-center gap-1">
+                    <Globe size={12} /> {user.country} Network
+                 </span>
+              </div>
+              <p className="text-slate-400 text-sm max-w-lg">
+                 {user.positionLabel} at {user.orgName}. Authorized signage rights for {user.sector} supply chain events.
+              </p>
+           </div>
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b border-slate-200">
+         <button 
+           onClick={() => setActiveTab('details')}
+           className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'details' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+         >
+           Entity Details
+         </button>
+         <button 
+           onClick={() => setActiveTab('security')}
+           className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'security' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+         >
+           Security & Access
+         </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden w-full">
-            {/* Header / Banner */}
-            <div className="bg-slate-900 p-8 text-white flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
-              <div className="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center text-3xl font-bold shrink-0 shadow-lg ring-4 ring-slate-800">
-                {user.name.charAt(0)}
-              </div>
-              <div className="text-center md:text-left">
-                <h3 className="text-2xl font-bold">{user.name}</h3>
-                <div className="flex items-center justify-center md:justify-start space-x-2 text-slate-400 mt-1">
-                  <Shield size={16} />
-                  <span className="text-sm font-medium">{user.role}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8">
-              <form onSubmit={handleSubmit} className="space-y-6 w-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Read Only Fields */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-2 tracking-wider">GLN (Digital Identity)</label>
-                    <div className="relative">
-                      <MapPin size={18} className="absolute left-3 top-3 text-slate-400" />
-                      <input
-                        disabled
-                        value={user.gln}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 font-mono text-sm cursor-not-allowed"
-                      />
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold">Immutable GS1 Identifier</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-2 tracking-wider">Account Role</label>
-                    <div className="relative">
-                      <Shield size={18} className="absolute left-3 top-3 text-slate-400" />
-                      <input
-                        disabled
-                        value={user.role}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 text-sm cursor-not-allowed"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Sub Categories Display */}
-                  {user.subCategories && user.subCategories.length > 0 && (
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-semibold text-slate-500 uppercase mb-2 tracking-wider flex items-center gap-1">
-                        <Tags size={14} />
-                        Operating Categories
-                      </label>
-                      <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                        {user.subCategories.map((cat, idx) => (
-                          <span key={idx} className="bg-white border border-slate-200 text-slate-700 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-                            {cat}
-                          </span>
-                        ))}
+         {/* Left Column (Main Form) */}
+         <div className="lg:col-span-2 space-y-6">
+            {activeTab === 'details' ? (
+                <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                   
+                   {/* Personal Info Section */}
+                   <section>
+                      <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-2">
+                         <UserCircle className="text-indigo-500" size={18} />
+                         Authorized Representative
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase">Full Name</label>
+                            <input name="name" value={formData.name} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase">Official Email</label>
+                            <div className="relative">
+                               <Mail size={16} className="absolute left-4 top-3.5 text-slate-400" />
+                               <input name="email" value={formData.email} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                            </div>
+                         </div>
+                         <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase">Contact Phone</label>
+                            <div className="relative">
+                               <Phone size={16} className="absolute left-4 top-3.5 text-slate-400" />
+                               <input name="phone" value={formData.phone} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                            </div>
+                         </div>
                       </div>
-                    </div>
-                  )}
+                   </section>
 
-                  {/* Editable Fields */}
-                  <div className="md:col-span-2 border-t border-slate-100 pt-6 mt-2">
-                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <UserCircle size={18} className="text-indigo-600" />
-                        Account Holder Details
-                    </h4>
-                  </div>
+                   <div className="border-t border-slate-100"></div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Full Name</label>
-                    <div className="relative">
-                      <UserCircle size={18} className="absolute left-3 top-3 text-slate-400" />
-                      <input
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all"
-                      />
-                    </div>
-                  </div>
+                   {/* Organization Section */}
+                   <section>
+                      <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-2">
+                         <Building2 className="text-indigo-500" size={18} />
+                         Legal Entity
+                      </h3>
+                      <div className="space-y-6">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-500 uppercase">Registered Org Name</label>
+                                <input name="orgName" value={formData.orgName} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-500 uppercase">Global Location No (GLN)</label>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Globe size={16} className="absolute left-4 top-3.5 text-slate-400" />
+                                        <input disabled value={user.gln} className="w-full bg-slate-100 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm font-mono text-slate-500 cursor-not-allowed" />
+                                    </div>
+                                </div>
+                            </div>
+                         </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Organization Name</label>
-                    <div className="relative">
-                      <Building2 size={18} className="absolute left-3 top-3 text-slate-400" />
-                      <input
-                        name="orgName"
-                        value={formData.orgName}
-                        onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all"
-                      />
+                         {user.subCategories && user.subCategories.length > 0 && (
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-500 uppercase">Business Categories</label>
+                                <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                    {user.subCategories.map((cat, i) => (
+                                        <span key={i} className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 shadow-sm flex items-center gap-1">
+                                            <Tags size={10} className="text-indigo-400" />
+                                            {cat}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                         )}
+                      </div>
+                   </section>
+
+                   <div className="flex justify-end pt-4">
+                      <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg transition-all active:scale-95 disabled:opacity-70"
+                      >
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                        <span>Save Changes</span>
+                      </button>
+                   </div>
+                </form>
+            ) : (
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                    {/* Security Cards */}
+                    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                    <Lock className="text-indigo-600" size={20} />
+                                    <span>Password & Authentication</span>
+                                </h3>
+                                <p className="text-sm text-slate-500 mt-1">Manage how you sign in to the E-Ledger Network.</p>
+                            </div>
+                            <button className="text-xs font-bold text-indigo-600 hover:text-indigo-800 px-4 py-2 bg-indigo-50 rounded-lg transition-colors">
+                                Update Password
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-white rounded-lg border border-slate-200 text-slate-400">
+                                        <Key size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-700">Two-Factor Authentication</p>
+                                        <p className="text-xs text-slate-500">Secure your node with OTP.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Enabled</span>
+                                    <button className="text-xs text-slate-400 hover:text-slate-600 font-bold underline">Config</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
+
+                    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-6">
+                            <History className="text-indigo-600" size={20} />
+                            <span>Session Activity</span>
+                        </h3>
+                        <div className="space-y-4">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-2 h-2 rounded-full ${i === 1 ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-700">Web Portal Login</p>
+                                            <p className="text-xs text-slate-400 font-mono">IP: 192.168.1.{10+i} • Mumbai, IN</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-xs text-slate-500 font-medium">
+                                        {i === 1 ? 'Active Now' : `${i*2} hours ago`}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
+            )}
+         </div>
 
-                <div className="flex justify-end pt-4 border-t border-slate-100">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-70 shadow-lg shadow-indigo-900/10 active:scale-95"
-                  >
-                    {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                    <span>Update Account Details</span>
-                  </button>
+         {/* Right Sidebar */}
+         <div className="space-y-6">
+            {/* ID Card Simulation */}
+            <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
+                <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-all"></div>
+                <div className="flex justify-between items-start mb-8">
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Digital Identity</p>
+                        <h3 className="text-xl font-black mt-1">E-Ledger Pass</h3>
+                    </div>
+                    <Cpu size={24} className="opacity-80" />
                 </div>
-              </form>
+                <div className="space-y-4">
+                    <div>
+                        <p className="text-[9px] uppercase font-bold opacity-60">GLN</p>
+                        <p className="font-mono text-sm tracking-wide">{user.gln}</p>
+                    </div>
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <p className="text-[9px] uppercase font-bold opacity-60">Status</p>
+                            <div className="flex items-center gap-1.5 mt-1">
+                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+                                <span className="text-xs font-bold">Active Node</span>
+                            </div>
+                        </div>
+                        <div className="bg-white/20 p-1.5 rounded">
+                            <Cpu size={20} />
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
 
-        {/* Sidebar Settings */}
-        <div className="space-y-6">
-            {!isAuthority && (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <div className="p-3 bg-indigo-50 rounded-xl w-fit mb-4">
-                        <Cpu className="text-indigo-600" size={24} />
+            {/* ERP Status Mini */}
+            {user.erpStatus && (
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                            <Database size={18} />
+                        </div>
+                        <h4 className="font-bold text-slate-700 text-sm">System Link</h4>
                     </div>
-                    <h3 className="font-bold text-slate-800 mb-2">ERP Integration</h3>
-                    <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                        Your account is currently linked via <strong>{user.erpType}</strong>. 
-                        Configure automated data synchronization from your local enterprise system.
-                    </p>
-                    <Link 
-                        to="/erp-settings" 
-                        className="flex items-center justify-between w-full p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 rounded-xl transition-all group"
-                    >
-                        <span className="text-sm font-bold text-slate-700">Manage Integration</span>
-                        <ArrowRight size={18} className="text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-1" />
-                    </Link>
+                    <div className="space-y-3">
+                        <div className="flex justify-between text-xs">
+                            <span className="text-slate-500">Type</span>
+                            <span className="font-bold text-slate-800">{user.erpType}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                            <span className="text-slate-500">Status</span>
+                            <span className={`font-bold px-2 py-0.5 rounded text-[10px] uppercase ${
+                                user.erpStatus === 'CONNECTED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                            }`}>{user.erpStatus}</span>
+                        </div>
+                    </div>
                 </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <h3 className="font-bold text-slate-800 mb-4">Security Status</h3>
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">2FA Verification</span>
-                        <span className="text-emerald-600 font-bold">Enabled</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">API Gateway</span>
-                        <span className="text-emerald-600 font-bold">Active</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Last Login</span>
-                        <span className="text-slate-700 font-medium">Today, 10:45 AM</span>
-                    </div>
-                </div>
-                <button className="w-full mt-6 py-2.5 text-red-600 font-bold text-xs uppercase border border-red-100 rounded-lg hover:bg-red-50 transition-colors">
-                    Reset Security Keys
+            {/* Support */}
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5">
+                <h4 className="font-bold text-slate-700 text-sm mb-2">Need Compliance Help?</h4>
+                <p className="text-xs text-slate-500 mb-4">Contact the iVEDA support desk for assistance with regulatory reporting.</p>
+                <button className="w-full py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                    Contact Support
                 </button>
             </div>
-        </div>
+         </div>
       </div>
     </div>
   );

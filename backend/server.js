@@ -8,6 +8,7 @@
  * - Strict Competitor Secrecy (RBAC)
  * - Audit Logs
  * - Duplicate Detection
+ * - PRODUCTION GRADE SECURITY ADDITIONS
  */
 
 const express = require('express');
@@ -17,6 +18,8 @@ const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const crypto = require('crypto');
+const helmet = require('helmet'); // Security Headers
+const rateLimit = require('express-rate-limit'); // DDoS Protection
 
 // Blockchain Module Imports
 const { registerBlockchainRoutes } = require('./blockchain/api');
@@ -24,8 +27,24 @@ const { registerBlockchainRoutes } = require('./blockchain/api');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
+// --- SECURITY MIDDLEWARE ---
+// 1. Helmet: Sets various HTTP headers to secure the app (XSS Filter, HSTS, etc)
+app.use(helmet());
+
+// 2. CORS: Restrict allowed origins in production
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? 'https://eledger.india.gov.in' : '*',
+  methods: ['GET', 'POST', 'PUT']
+}));
+
+// 3. Rate Limiting: Prevent brute-force and DDoS
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api/', limiter);
+
 app.use(bodyParser.json());
 
 // Database Initialization
@@ -118,6 +137,7 @@ app.get('/', (req, res) => {
 // 1. AUTHENTICATION
 app.post('/api/auth/login', (req, res) => {
   const { gln, password } = req.body;
+  // Use parameterized queries to prevent SQL Injection (Native in sqlite3)
   db.get('SELECT * FROM users WHERE gln = ? AND password = ?', [gln, password], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(401).json({ error: 'Invalid Credentials' });

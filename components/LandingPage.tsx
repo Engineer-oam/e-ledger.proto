@@ -39,8 +39,8 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
           <div className="flex items-center gap-3">
             <Logo size="md" />
             <div>
-                <span className="text-2xl font-black text-slate-900 tracking-tighter uppercase block leading-none">E-Ledger India</span>
-                <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest block leading-none">National Pharma Grid</span>
+                <span className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase block leading-none">E-Ledger India</span>
+                <span className="text-[9px] md:text-[10px] font-bold text-teal-600 uppercase tracking-widest block leading-none">National Pharma Grid</span>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-4">
@@ -50,7 +50,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
         </div>
       </nav>
 
-      <section className="relative pt-48 pb-32 overflow-hidden">
+      <section className="relative pt-32 md:pt-48 pb-20 md:pb-32 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
           <div className="absolute top-20 left-10 w-96 h-96 bg-teal-500 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500 rounded-full blur-[120px]"></div>
@@ -58,22 +58,22 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
         </div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-24">
+          <div className="flex flex-col lg:flex-row items-center gap-12 md:gap-24">
             
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 text-[10px] font-black uppercase tracking-widest mb-8">
                 <Globe size={14} />
                 National Pharmaceutical Traceability
               </div>
-              <h1 className="text-6xl md:text-8xl font-black text-slate-900 leading-[1.1] mb-8 tracking-tighter">
+              <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-slate-900 leading-[1.1] mb-8 tracking-tighter">
                 Secure <br/>
                 <span className="text-teal-500">Bharat</span> Chain.
               </h1>
-              <p className="text-xl text-slate-500 max-w-xl leading-relaxed mb-12">
+              <p className="text-lg md:text-xl text-slate-500 max-w-xl leading-relaxed mb-12 mx-auto lg:mx-0">
                 India's unified blockchain ledger for drug authenticity. Compliant with Schedule H1 tracking, GST E-Way Bill integration, and global serialization standards.
               </p>
               
-              <div className="flex flex-wrap justify-center lg:justify-start gap-12 text-slate-400">
+              <div className="flex flex-wrap justify-center lg:justify-start gap-8 md:gap-12 text-slate-400">
                 <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]">
                    <Box size={24} className="text-teal-500" />
                    iVEDA Ready
@@ -90,7 +90,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
             </div>
 
             <div className="w-full max-w-md">
-              <div className="bg-slate-900 rounded-[3rem] p-10 md:p-14 shadow-2xl relative">
+              <div className="bg-slate-900 rounded-[3rem] p-8 md:p-14 shadow-2xl relative">
                 <div className="absolute -top-6 -right-6 w-16 h-16 bg-teal-500 rounded-2xl flex items-center justify-center shadow-xl text-white">
                   <Lock size={32} />
                 </div>
