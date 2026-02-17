@@ -13,7 +13,7 @@ interface BatchManagerProps {
 }
 
 const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<'inventory' | 'shipments'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'shipments' | 'incoming'>('inventory');
   const [batches, setBatches] = useState<Batch[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   
@@ -152,6 +152,16 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
     }
   };
 
+  const handleReceiveBatch = async (batch: Batch) => {
+      try {
+          await LedgerService.receiveBatch(batch.batchID, user);
+          toast.success(`Received ${batch.productName} into inventory.`);
+          fetchData();
+      } catch (err: any) {
+          toast.error("Failed to receive batch.");
+      }
+  };
+
   const handleReturnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBatchForReturn) return;
@@ -260,6 +270,17 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                     Current Stock
                 </button>
                 <button
+                   onClick={() => setActiveTab('incoming')}
+                   className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${activeTab === 'incoming' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                    Incoming
+                    {batches.filter(b => b.intendedRecipientGLN === user.gln && b.status === BatchStatus.IN_TRANSIT).length > 0 && (
+                        <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                            {batches.filter(b => b.intendedRecipientGLN === user.gln && b.status === BatchStatus.IN_TRANSIT).length}
+                        </span>
+                    )}
+                </button>
+                <button
                    onClick={() => setActiveTab('shipments')}
                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'shipments' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                 >
@@ -350,7 +371,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                     {batches
-                      .filter(b => statusFilter === 'ALL' || b.status === statusFilter)
+                      .filter(b => (statusFilter === 'ALL' || b.status === statusFilter) && b.currentOwnerGLN === user.gln)
                       .map((batch) => {
                         const canTransfer = batch.currentOwnerGLN === user.gln && batch.status !== 'SOLD' && batch.status !== 'IN_TRANSIT' && batch.status !== 'RETURNED' && batch.status !== 'RECALLED';
                         const isSelected = selectedBatchIds.includes(batch.batchID);
@@ -443,7 +464,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                             </td>
                         </tr>
                     )})}
-                    {batches.filter(b => statusFilter === 'ALL' || b.status === statusFilter).length === 0 && (
+                    {batches.filter(b => (statusFilter === 'ALL' || b.status === statusFilter) && b.currentOwnerGLN === user.gln).length === 0 && (
                         <tr>
                             <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                                 <div className="flex flex-col items-center gap-2">
@@ -459,6 +480,54 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
             )}
         </div>
       </>
+      )}
+
+      {activeTab === 'incoming' && (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex items-center gap-3">
+                <Truck className="text-indigo-600" />
+                <h3 className="font-bold text-slate-800">Incoming Shipments</h3>
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                    <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
+                        <tr>
+                            <th className="px-6 py-4">Batch ID</th>
+                            <th className="px-6 py-4">Product</th>
+                            <th className="px-6 py-4">Sender</th>
+                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        {batches.filter(b => b.intendedRecipientGLN === user.gln && b.status === BatchStatus.IN_TRANSIT).map(batch => (
+                            <tr key={batch.batchID} className="hover:bg-slate-50">
+                                <td className="px-6 py-4 font-mono text-sm">{batch.batchID}</td>
+                                <td className="px-6 py-4 font-medium text-slate-800">{batch.productName}</td>
+                                <td className="px-6 py-4 text-sm text-slate-600">
+                                    {batch.trace.find(t => t.type === 'DISPATCH')?.actorName || batch.manufacturerGLN}
+                                    <div className="text-[10px] text-slate-400">{batch.trace.find(t => t.type === 'DISPATCH')?.actorGLN}</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full font-bold">In Transit</span>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                    <button 
+                                        onClick={() => handleReceiveBatch(batch)}
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-colors"
+                                    >
+                                        Receive & Verify
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        {batches.filter(b => b.intendedRecipientGLN === user.gln && b.status === BatchStatus.IN_TRANSIT).length === 0 && (
+                            <tr><td colSpan={5} className="p-8 text-center text-slate-400">No incoming shipments found.</td></tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
       )}
       
       {activeTab === 'shipments' && (

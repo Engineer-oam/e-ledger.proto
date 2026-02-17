@@ -1,13 +1,15 @@
-
 import React, { useState } from 'react';
 import { LedgerService } from '../services/ledgerService';
-import { Batch } from '../types';
-import { Search, ShieldCheck, XCircle, Clock, MapPin, CheckCircle2, Fingerprint, Camera, Stamp, AlertOctagon, Award } from 'lucide-react';
+import { AuthService } from '../services/authService';
+import { Batch, User } from '../types';
+import { Search, ShieldCheck, XCircle, Clock, MapPin, CheckCircle2, Fingerprint, Camera, Stamp, AlertOctagon, Award, Building2, UserCheck, Briefcase, Globe } from 'lucide-react';
 import QRScanner from './QRScanner';
 
 const ProductVerifier: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'product' | 'partner'>('product');
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<Batch | null>(null);
+  const [partnerResult, setPartnerResult] = useState<User | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -54,10 +56,35 @@ const ProductVerifier: React.FC = () => {
     }
   };
 
+  const handlePartnerVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    
+    setLoading(true);
+    setError('');
+    setPartnerResult(null);
+    setSearched(true);
+
+    try {
+        const user = await AuthService.getPublicProfile(query.trim());
+        if (user) {
+            setPartnerResult(user);
+        } else {
+            setError('GLN not found in National Registry. This entity may be unauthorized.');
+        }
+    } catch (err) {
+        setError('Verification Service Unavailable.');
+    } finally {
+        setLoading(false);
+    }
+  };
+
   const handleCameraScan = (text: string) => {
     setShowScanner(false);
     setQuery(text);
-    handleVerify(undefined, text);
+    if (activeTab === 'product') {
+        handleVerify(undefined, text);
+    }
   };
 
   return (
@@ -72,37 +99,57 @@ const ProductVerifier: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-slate-800">Authenticity Verification</h2>
-           <p className="text-slate-500 text-sm">Official E-Ledger Integrity Portal</p>
+           <h2 className="text-2xl font-bold text-slate-800">Verification Services</h2>
+           <p className="text-slate-500 text-sm">Verify Products (GTIN) and Trading Partners (GLN)</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 mb-8 w-full overflow-hidden">
-        <form onSubmit={e => handleVerify(e)} className="p-4 md:p-6 flex flex-col md:flex-row items-center gap-3 md:gap-4 bg-slate-50 border-b border-slate-100">
+      {/* Tabs */}
+      <div className="bg-white rounded-t-2xl border-b border-slate-200 px-2 flex gap-2">
+         <button 
+            onClick={() => { setActiveTab('product'); setQuery(''); setResult(null); setError(''); setSearched(false); }}
+            className={`px-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'product' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+         >
+            <ShieldCheck size={18} />
+            Product Authenticity
+         </button>
+         <button 
+            onClick={() => { setActiveTab('partner'); setQuery(''); setPartnerResult(null); setError(''); setSearched(false); }}
+            className={`px-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'partner' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+         >
+            <Building2 size={18} />
+            Partner GLN Status
+         </button>
+      </div>
+
+      <div className="bg-white rounded-b-2xl shadow-sm border border-slate-200 border-t-0 mb-8 w-full overflow-hidden">
+        <form onSubmit={activeTab === 'product' ? (e) => handleVerify(e) : handlePartnerVerify} className="p-4 md:p-6 flex flex-col md:flex-row items-center gap-3 md:gap-4 bg-slate-50 border-b border-slate-100">
           <div className="relative flex-1 w-full max-w-2xl">
             <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Enter Product Hash or Batch ID..."
+              placeholder={activeTab === 'product' ? "Enter Product Hash or Batch ID..." : "Enter 13-digit Global Location Number (GLN)..."}
               className="w-full pl-12 pr-12 py-3.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none transition font-mono text-sm shadow-sm"
             />
-            <button
-               type="button"
-               onClick={() => setShowScanner(true)}
-               className="absolute right-3 top-2.5 p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-               title="Scan"
-            >
-               <Camera size={22} />
-            </button>
+            {activeTab === 'product' && (
+                <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                className="absolute right-3 top-2.5 p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                title="Scan"
+                >
+                <Camera size={22} />
+                </button>
+            )}
           </div>
           <button 
             type="submit" 
             disabled={loading || !query}
             className="w-full md:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap"
           >
-            {loading ? 'Verifying...' : 'Check Authenticity'}
+            {loading ? 'Verifying...' : 'Check Status'}
           </button>
         </form>
 
@@ -128,7 +175,7 @@ const ProductVerifier: React.FC = () => {
           </div>
         )}
 
-        {searched && !loading && !result && !error && !duplicateAlert.detected && (
+        {searched && !loading && !result && !partnerResult && !error && !duplicateAlert.detected && (
            <div className="p-16 text-center text-slate-400">
               <Search size={48} className="mx-auto mb-4 opacity-20" />
               <p>No records found on the global ledger. Please check the ID.</p>
@@ -143,9 +190,9 @@ const ProductVerifier: React.FC = () => {
           </div>
         )}
 
-        {result && (
+        {/* Product Result */}
+        {result && activeTab === 'product' && (
           <div className="bg-white animate-in fade-in slide-in-from-bottom-8 duration-700">
-            
             {/* Certificate Header */}
             <div className={`relative overflow-hidden p-8 text-white ${result.dutyPaid ? 'bg-emerald-600' : 'bg-amber-500'}`}>
                 <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
@@ -235,6 +282,67 @@ const ProductVerifier: React.FC = () => {
                 <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Verified via E-Ledger Distributed Network</p>
             </div>
           </div>
+        )}
+
+        {/* Partner GLN Result */}
+        {partnerResult && activeTab === 'partner' && (
+            <div className="bg-white animate-in fade-in slide-in-from-bottom-8 duration-700 p-8">
+                <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-lg">
+                    <div className="bg-slate-900 p-8 text-white text-center relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                        <div className="relative z-10">
+                            <div className="w-24 h-24 bg-white text-slate-900 rounded-full flex items-center justify-center text-3xl font-black mx-auto mb-4 border-4 border-slate-700 shadow-xl">
+                                {partnerResult.orgName.charAt(0)}
+                            </div>
+                            <h3 className="text-2xl font-black">{partnerResult.orgName}</h3>
+                            <p className="text-slate-400 text-sm font-medium mt-1 uppercase tracking-widest">{partnerResult.role.replace('_', ' ')}</p>
+                        </div>
+                    </div>
+                    
+                    <div className="p-8">
+                        <div className="flex justify-center mb-8">
+                            <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded-full font-bold text-sm border border-emerald-200">
+                                <UserCheck size={18} />
+                                Verified Trading Partner
+                            </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    <Globe size={12} /> Global Location Number
+                                </p>
+                                <p className="text-lg font-mono font-bold text-slate-800">{partnerResult.gln}</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    <Briefcase size={12} /> Category
+                                </p>
+                                <p className="text-lg font-bold text-slate-800">{partnerResult.positionLabel}</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    <MapPin size={12} /> Jurisdiction
+                                </p>
+                                <p className="text-lg font-bold text-slate-800">{partnerResult.country === 'IN' ? 'India (CDSCO/GST)' : partnerResult.country}</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    <Clock size={12} /> Member Since
+                                </p>
+                                <p className="text-lg font-bold text-slate-800">2023</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 pt-8 border-t border-slate-100 text-center">
+                            <p className="text-xs text-slate-500">
+                                This entity is authorized to transact on the E-Ledger Network.
+                                <br/>Always verify digital signatures on invoices matching this GLN.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         )}
       </div>
     </div>

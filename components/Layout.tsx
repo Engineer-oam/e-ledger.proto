@@ -68,13 +68,13 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-          <div className="flex items-center space-x-3 p-3 bg-slate-800/50 rounded-2xl mb-4 border border-slate-700/50">
-            <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow-lg">{user.name.charAt(0)}</div>
+          <Link to="/profile" className="flex items-center space-x-3 p-3 bg-slate-800/50 hover:bg-slate-800 rounded-2xl mb-4 border border-slate-700/50 transition-colors group cursor-pointer">
+            <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow-lg group-hover:scale-105 transition-transform">{user.name.charAt(0)}</div>
             <div className="overflow-hidden">
-              <p className="text-sm font-bold truncate">{user.name}</p>
-              <p className="text-[10px] text-slate-500 uppercase font-black truncate">{user.orgName}</p>
+              <p className="text-sm font-bold truncate text-slate-200 group-hover:text-white">{user.name}</p>
+              <p className="text-[10px] text-slate-500 uppercase font-black truncate group-hover:text-slate-400">{user.orgName}</p>
             </div>
-          </div>
+          </Link>
           <button onClick={onLogout} className="w-full flex items-center space-x-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-900/20 rounded-xl transition-colors">
             <LogOut size={18} />
             <span className="text-sm font-bold">Sign Out</span>

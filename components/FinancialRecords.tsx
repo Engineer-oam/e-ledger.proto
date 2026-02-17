@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import { LedgerService } from '../services/ledgerService';
-import { FileText, ArrowUpRight, ArrowDownLeft, RotateCcw, Printer, Filter, IndianRupee, Search } from 'lucide-react';
+import { FileText, ArrowUpRight, ArrowDownLeft, RotateCcw, Printer, Filter, IndianRupee, Search, Download, FileSpreadsheet } from 'lucide-react';
 import PrintableInvoice from './PrintableInvoice';
+import { toast } from 'react-toastify';
 
 interface FinancialRecordsProps {
   user: User;
@@ -150,6 +150,34 @@ const FinancialRecords: React.FC<FinancialRecordsProps> = ({ user }) => {
     setFilteredTransactions(temp);
   };
 
+  const handleDownload = () => {
+    // Basic CSV Export simulation
+    const headers = ["Date", "Doc ID", "Type", "Product", "Partner", "Amount", "Status"];
+    const rows = filteredTransactions.map(t => [
+        new Date(t.date).toLocaleDateString(),
+        t.id,
+        t.type,
+        t.product,
+        `${t.partnerName} (${t.partnerGLN})`,
+        t.amount.toFixed(2),
+        t.status
+    ]);
+    
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + headers.join(",") + "\n" 
+        + rows.map(e => e.join(",")).join("\n");
+        
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `eledger_statement_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success("Statement downloaded successfully.");
+  };
+
   const handlePrint = (tx: Transaction) => {
     // Reconstruct data structure expected by PrintableInvoice
     let printData: any = {};
@@ -232,7 +260,7 @@ const FinancialRecords: React.FC<FinancialRecordsProps> = ({ user }) => {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Duty & Tax Logs</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Financial History & Records</h2>
           <p className="text-slate-500 text-sm">Ledger of Invoices, Returns & Receipts</p>
         </div>
         
@@ -263,6 +291,14 @@ const FinancialRecords: React.FC<FinancialRecordsProps> = ({ user }) => {
                </button>
              ))}
            </div>
+
+           <button 
+             onClick={handleDownload}
+             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-sm shadow-md transition-all active:scale-95"
+           >
+             <Download size={16} />
+             <span className="hidden sm:inline">Export Statement</span>
+           </button>
         </div>
       </div>
 

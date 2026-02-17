@@ -89,10 +89,26 @@ export const AuthService = {
     return safeUser;
   },
 
+  getPublicProfile: async (gln: string): Promise<User | null> => {
+    // Simulate lookup
+    await new Promise(resolve => setTimeout(resolve, 600));
+    const users = AuthService.getUsersLocal();
+    const user = users.find(u => u.gln === gln);
+    if (user) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...safeUser } = user;
+        return safeUser;
+    }
+    return null;
+  },
+
   generateGLN: (): string => '049' + Math.floor(Math.random() * 1000000000).toString().padStart(9, '0') + '0',
   generateGTIN: (): string => '0' + Math.floor(Math.random() * 1000000000000).toString().padStart(12, '0') + '0',
   generateSSCC: (gln: string): string => '1' + gln.substring(0,7) + Math.floor(Math.random() * 1000000000).toString().padStart(9, '0') + '0',
   updateUser: async (data: any) => data,
-  checkUser: async (gln: string) => true,
+  checkUser: async (gln: string) => {
+    const users = AuthService.getUsersLocal();
+    return !!users.find(u => u.gln === gln);
+  },
   resetPassword: async (gln: string, p: string) => true
 };

@@ -1,7 +1,8 @@
-import { Batch, BatchStatus, TraceEvent, User, UserRole, LogisticsUnit, VerificationRequest, VerificationStatus, PaymentDetails, GSTDetails, EWayBill, ReturnReason, Sector, ERPType } from '../types';
+import { Batch, BatchStatus, TraceEvent, User, UserRole, LogisticsUnit, VerificationRequest, VerificationStatus, PaymentDetails, GSTDetails, EWayBill, ReturnReason, Sector, ERPType, AuditLog } from '../types';
 
 const LEDGER_STORAGE_KEY = 'eledger_data';
 const SSCC_STORAGE_KEY = 'eledger_sscc';
+const AUDIT_STORAGE_KEY = 'eledger_audit_logs';
 const DELAY_MS = 200;
 
 /**
@@ -43,6 +44,22 @@ const getLedgerStateLocal = (): Batch[] => {
   } catch (e) { return []; }
 };
 
+const logAuditLocal = (gln: string, action: string, resourceId: string, details: string) => {
+  try {
+    const logs: AuditLog[] = JSON.parse(localStorage.getItem(AUDIT_STORAGE_KEY) || '[]');
+    const newLog: AuditLog = {
+      id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      timestamp: new Date().toISOString(),
+      userGLN: gln,
+      action,
+      resourceId,
+      details
+    };
+    // Keep last 500 logs
+    localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify([newLog, ...logs].slice(0, 500)));
+  } catch (e) { console.error("Local audit log failed", e); }
+};
+
 export const LedgerService = {
   getBatches: async (user: User): Promise<Batch[]> => {
     if (isRemote()) {
@@ -59,8 +76,25 @@ export const LedgerService = {
     return getLedgerStateLocal().filter(b => 
       user.role === UserRole.REGULATOR || 
       b.currentOwnerGLN === user.gln || 
+      b.intendedRecipientGLN === user.gln || 
       b.trace.some(t => t.actorGLN === user.gln)
     );
+  },
+
+  getAuditLogs: async (user: User): Promise<AuditLog[]> => {
+    if (isRemote()) {
+      try {
+        const res = await fetch(`${getApiUrl()}/audit/logs?role=${user.role}&gln=${user.gln}`);
+        if (res.ok) return await res.json();
+      } catch (e) { console.error("Audit fetch failed", e); }
+    }
+    const stored = localStorage.getItem(AUDIT_STORAGE_KEY);
+    const logs = stored ? JSON.parse(stored) : [];
+    // Filter locally if not regulator
+    if (user.role !== UserRole.REGULATOR && user.role !== UserRole.AUDITOR) {
+        return logs.filter((l: AuditLog) => l.userGLN === user.gln);
+    }
+    return logs;
   },
 
   exportLedger: async (): Promise<Batch[]> => {
@@ -124,6 +158,9 @@ export const LedgerService = {
     
     const local = getLedgerStateLocal();
     localStorage.setItem(LEDGER_STORAGE_KEY, JSON.stringify([newBatch, ...local]));
+    
+    logAuditLocal(actor.gln, 'CREATE_BATCH', batchID, `Genesis Hash: ${genesisHash.substring(0,8)}...`);
+    
     return batchID;
   },
 
@@ -144,6 +181,8 @@ export const LedgerService = {
     if (idx !== -1) {
       local[idx] = updatedBatch;
       localStorage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(local));
+      
+      logAuditLocal(newEvent.actorGLN, newEvent.type, batch.batchID, `TxHash: ${newEvent.txHash.substring(0,8)}...`);
     }
     return updatedBatch;
   },
@@ -209,16 +248,92 @@ export const LedgerService = {
       metadata: { reason }
     };
     await LedgerService.updateBatch({ ...batch, status: BatchStatus.RECALLED }, recallEvent);
+    logAuditLocal(actor.gln, 'RECALL', batchID, `Reason: ${reason}`);
     return true;
   },
 
-  getLogisticsUnits: async (user: User) => [],
-  createLogisticsUnit: async (s:string, b:string[], u:User) => s,
-  verifyByHash: async (h: string) => undefined,
+  getLogisticsUnits: async (user: User) => {
+      const stored = localStorage.getItem(SSCC_STORAGE_KEY);
+      const units: LogisticsUnit[] = stored ? JSON.parse(stored) : [];
+      return units.filter(u => u.creatorGLN === user.gln);
+  },
+
+  createLogisticsUnit: async (sscc: string, batchIDs: string[], user: User) => {
+      const stored = localStorage.getItem(SSCC_STORAGE_KEY);
+      const units: LogisticsUnit[] = stored ? JSON.parse(stored) : [];
+      const newUnit: LogisticsUnit = {
+          sscc,
+          creatorGLN: user.gln,
+          status: 'CREATED',
+          contents: batchIDs,
+          createdDate: new Date().toISOString(),
+          txHash: await sha256(sscc + Date.now())
+      };
+      localStorage.setItem(SSCC_STORAGE_KEY, JSON.stringify([newUnit, ...units]));
+      logAuditLocal(user.gln, 'SSCC_CREATE', sscc, `Items: ${batchIDs.length}`);
+      return sscc;
+  },
+
+  verifyByHash: async (hash: string) => undefined,
   submitVerificationRequest: async (g:string, l:string, r:User) => ({} as any),
   getVerificationHistory: async (u: User) => [],
-  // Fix: Updated method signature to accept additional optional parameters passed from BatchManager
-  transferBatches: async (ids: string[], to: string, name: string, u: User, gst?: GSTDetails, ewbPartial?: Partial<EWayBill>, payment?: any) => true,
-  // Fix: Updated method signature to accept additional optional refund parameter passed from BatchManager
-  returnBatch: async (id: string, to: string, r: ReturnReason, q: number, u: User, refund?: number) => true
+  
+  transferBatches: async (ids: string[], to: string, name: string, u: User, gst?: GSTDetails, ewbPartial?: Partial<EWayBill>, payment?: any) => {
+    for (const id of ids) {
+        const batch = await LedgerService.getBatchByID(id);
+        if (!batch) continue;
+        if (batch.currentOwnerGLN !== u.gln) continue;
+
+        const dispatchEvent: TraceEvent = {
+            eventID: `evt-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            type: 'DISPATCH',
+            timestamp: new Date().toISOString(),
+            actorGLN: u.gln,
+            actorName: u.orgName,
+            location: u.country === 'IN' ? 'Outbound Dock' : 'Distribution Center',
+            txHash: await sha256(`DISPATCH:${id}:${to}:${Date.now()}`),
+            previousHash: batch.trace[batch.trace.length - 1]?.txHash || batch.genesisHash,
+            metadata: {
+                recipient: name,
+                recipientGLN: to,
+                gst,
+                ewayBill: ewbPartial ? { ...ewbPartial, generatedDate: new Date().toISOString() } : undefined,
+                paymentStatus: payment?.status
+            }
+        };
+
+        const updatedBatch: Batch = {
+            ...batch,
+            status: BatchStatus.IN_TRANSIT,
+            intendedRecipientGLN: to
+        };
+
+        await LedgerService.updateBatch(updatedBatch, dispatchEvent);
+    }
+    return true;
+  },
+
+  returnBatch: async (id: string, to: string, r: ReturnReason, q: number, u: User, refund?: number) => {
+      const batch = await LedgerService.getBatchByID(id);
+      if (!batch) return false;
+      const returnEvent: TraceEvent = {
+          eventID: `evt-${Date.now()}`,
+          type: 'RETURN',
+          timestamp: new Date().toISOString(),
+          actorGLN: u.gln,
+          actorName: u.orgName,
+          location: 'Returns Dept',
+          txHash: await sha256(`RET:${id}:${to}`),
+          previousHash: batch.trace[batch.trace.length-1].txHash,
+          returnReason: r,
+          returnQuantity: q,
+          returnRecipientGLN: to,
+          metadata: { refundAmount: refund, returnTo: to, reason: r }
+      };
+      
+      const newStatus = r === ReturnReason.RECALLED ? BatchStatus.RECALLED : BatchStatus.RETURNED;
+      const updated = { ...batch, status: newStatus, totalReturnedQuantity: (batch.totalReturnedQuantity || 0) + q };
+      await LedgerService.updateBatch(updated, returnEvent);
+      return true;
+  }
 };

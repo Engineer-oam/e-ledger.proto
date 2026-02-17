@@ -249,4 +249,22 @@ app.post('/api/pos/verify', (req, res) => {
   });
 });
 
+// --- NEW AUDIT LOG ENDPOINT ---
+app.get('/api/audit/logs', (req, res) => {
+  const { role, gln } = req.query;
+  let query = 'SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100';
+  let params = [];
+  
+  if (role !== 'REGULATOR' && role !== 'AUDITOR') {
+     // Regular users can only see their own actions
+     query = 'SELECT * FROM audit_logs WHERE userGLN = ? ORDER BY timestamp DESC LIMIT 100';
+     params = [gln];
+  }
+  
+  db.all(query, params, (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
 app.listen(PORT, () => console.log(`E-Ledger MVP Backend running on port ${PORT}`));

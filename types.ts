@@ -223,3 +223,12 @@ export interface LogisticsUnit {
   createdDate: string;
   txHash: string;
 }
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  userGLN: string;
+  action: string;
+  resourceId: string;
+  details: string;
+}
