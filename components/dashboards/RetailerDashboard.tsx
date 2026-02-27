@@ -103,7 +103,7 @@ const RetailerDashboard: React.FC<RetailerDashboardProps> = ({ user }) => {
            <div className="absolute right-0 top-0 p-6 opacity-10"><ShoppingBag size={100} /></div>
            <p className="text-emerald-100 font-bold text-xs uppercase tracking-widest mb-1">Today's Store Revenue</p>
            <h2 className="text-4xl font-black flex items-center gap-2">
-             ₹ {dailyRevenue.toLocaleString()}
+             {dailyRevenue.toLocaleString()}
              <span className="text-sm font-medium bg-white/20 px-2 py-1 rounded text-white flex items-center gap-1">
                <TrendingUp size={12} /> +14%
              </span>
@@ -210,7 +210,7 @@ const RetailerDashboard: React.FC<RetailerDashboardProps> = ({ user }) => {
                             </div>
                             <div className="bg-white p-3 rounded-lg border border-slate-100">
                                 <p className="text-[10px] text-slate-400 uppercase font-bold">Price</p>
-                                <p className="font-bold text-slate-700">₹{scannedBatch.mrp || 120}</p>
+                                <p className="font-bold text-slate-700">{scannedBatch.mrp || 120}</p>
                             </div>
                         </div>
                         <button 

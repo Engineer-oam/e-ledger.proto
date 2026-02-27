@@ -5,7 +5,11 @@ export enum Sector {
   PHARMA = 'PHARMA',
   FMCG = 'FMCG',
   AGRICULTURE = 'AGRICULTURE',
-  LOGISTICS = 'LOGISTICS'
+  LOGISTICS = 'LOGISTICS',
+  TEXTILE = 'TEXTILE',
+  AUTOMOTIVE = 'AUTOMOTIVE',
+  ELECTRONICS = 'ELECTRONICS',
+  GENERAL = 'GENERAL'
 }
 
 export enum ERPType {
@@ -21,7 +25,15 @@ export enum UserRole {
   DISTRIBUTOR = 'DISTRIBUTOR',
   RETAILER = 'RETAILER',
   REGULATOR = 'REGULATOR',
-  AUDITOR = 'AUDITOR'
+  INSPECTION_AGENCY = 'INSPECTION_AGENCY',
+  FINANCIER = 'FINANCIER',
+  AUDITOR = 'AUDITOR',
+  EXPORTER = 'EXPORTER',
+  IMPORTER = 'IMPORTER',
+  LOGISTICS_PROVIDER = 'LOGISTICS_PROVIDER',
+  CUSTOMS_OFFICIAL = 'CUSTOMS_OFFICIAL',
+  PORT_OPERATOR = 'PORT_OPERATOR',
+  SYSTEM_ADMIN = 'SYSTEM_ADMIN'
 }
 
 export enum BatchStatus {
@@ -176,6 +188,60 @@ export enum ReturnReason {
   RECALLED = 'RECALLED',
   WRONG_ITEM = 'WRONG_ITEM',
   OTHER = 'OTHER'
+}
+
+export enum StakeholderRole {
+  // Platform Users (Transacting Entities)
+  MANUFACTURER = 'MANUFACTURER',
+  EXPORTER = 'EXPORTER',
+  IMPORTER = 'IMPORTER',
+  DISTRIBUTOR = 'DISTRIBUTOR',
+  RETAILER = 'RETAILER',
+  PHARMA_COMPANY = 'PHARMA_COMPANY',
+  FMCG_COMPANY = 'FMCG_COMPANY',
+  MSME = 'MSME',
+
+  // Workflow Validators
+  INSPECTION_AGENCY = 'INSPECTION_AGENCY',
+  QUALITY_CONTROLLER = 'QUALITY_CONTROLLER',
+  LOGISTICS_PROVIDER = 'LOGISTICS_PROVIDER',
+  PORT_OPERATOR = 'PORT_OPERATOR',
+  CUSTOMS_BROKER = 'CUSTOMS_BROKER',
+
+  // Regulatory Nodes
+  CUSTOMS_OFFICIAL = 'CUSTOMS_OFFICIAL',
+  REGULATOR = 'REGULATOR',
+  TRADE_AUTHORITY = 'TRADE_AUTHORITY', // DGFT, State Depts
+  
+  // Financial Participants
+  BANKER = 'BANKER',
+  FINANCIER = 'FINANCIER',
+  INSURER = 'INSURER',
+  EXPORT_CREDIT_AGENCY = 'EXPORT_CREDIT_AGENCY',
+
+  // Governance & Technical
+  GOVERNANCE_COUNCIL = 'GOVERNANCE_COUNCIL',
+  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
+  AUDITOR = 'AUDITOR'
+}
+
+export interface Stakeholder {
+  id: string;
+  name: string;
+  role: StakeholderRole;
+  gln: string;
+  email?: string;
+}
+
+export interface ExportDetails {
+  isExport: boolean;
+  countryOfOrigin?: string;
+  portOfEntry?: string;
+  portOfExit?: string;
+  currency?: string;
+  customsDutyRate?: number;
+  customsBrokerGLN?: string;
+  incoterms?: string; // e.g., FOB, CIF
 }
 
 export interface GSTDetails {

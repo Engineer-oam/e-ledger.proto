@@ -21,11 +21,23 @@ const getApiUrl = () => {
 
 /**
  * Remote detection: If we are in the cloud, we MUST use the centralized DB.
+ * However, for AI Studio preview environments (*.run.app), we default to local storage
+ * unless explicitly configured otherwise, to prevent "AWS Centralized DB unreachable" errors.
  */
 const isRemote = () => {
   if (typeof window === 'undefined') return false;
-  const isCloud = !['localhost', '127.0.0.1'].includes(window.location.hostname);
-  return isCloud || localStorage.getItem('ELEDGER_USE_REMOTE') === 'true';
+  
+  // Explicit override
+  if (localStorage.getItem('ELEDGER_USE_REMOTE') === 'true') return true;
+  if (localStorage.getItem('ELEDGER_USE_REMOTE') === 'false') return false;
+
+  // Check for known cloud environments that SHOULD use remote DB
+  const isCloud = ['amplifyapp.com', 'compute.amazonaws.com'].some(d => window.location.hostname.includes(d));
+  
+  // Explicitly exclude AI Studio preview domains from "cloud" behavior by default
+  if (window.location.hostname.includes('run.app')) return false;
+
+  return isCloud;
 };
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -278,7 +290,7 @@ export const LedgerService = {
   submitVerificationRequest: async (g:string, l:string, r:User) => ({} as any),
   getVerificationHistory: async (u: User) => [],
   
-  transferBatches: async (ids: string[], to: string, name: string, u: User, gst?: GSTDetails, ewbPartial?: Partial<EWayBill>, payment?: any) => {
+  transferBatches: async (ids: string[], to: string, name: string, u: User, gst?: GSTDetails, ewbPartial?: Partial<EWayBill>, payment?: any, exportDetails?: any, stakeholders?: any[]) => {
     for (const id of ids) {
         const batch = await LedgerService.getBatchByID(id);
         if (!batch) continue;
@@ -298,7 +310,9 @@ export const LedgerService = {
                 recipientGLN: to,
                 gst,
                 ewayBill: ewbPartial ? { ...ewbPartial, generatedDate: new Date().toISOString() } : undefined,
-                paymentStatus: payment?.status
+                paymentStatus: payment?.status,
+                exportDetails,
+                stakeholders
             }
         };
 

@@ -188,7 +188,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <div className="inline-block p-2 bg-white rounded-2xl mb-2 shadow-lg shadow-indigo-900/50 transform rotate-3">
                 <Logo size="md" />
             </div>
-            <h1 className="text-2xl font-extrabold text-white mb-0.5 tracking-tight">E-Ledger India</h1>
+            <h1 className="text-2xl font-extrabold text-white mb-0.5 tracking-tight">E-Ledger Supply Chain</h1>
             <p className="text-slate-400 text-xs font-medium">Supply Chain Integrity Portal</p>
           </div>
         </div>
@@ -221,7 +221,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  License No / GLN
+                  Business License / GLN
                 </label>
                 <input
                   type="text"
@@ -264,9 +264,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <form onSubmit={handleResetSubmit} className="space-y-4">
               {resetStep === 1 && (
                 <>
-                  <p className="text-xs text-slate-600 text-center mb-2 leading-relaxed">Enter your License Number to verify identity.</p>
+                  <p className="text-xs text-slate-600 text-center mb-2 leading-relaxed">Enter your Business License to verify identity.</p>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">License / GLN</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Business License / GLN</label>
                     <input type="text" autoFocus required value={resetGln} onChange={(e) => setResetGln(e.target.value)} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-mono text-sm text-slate-900" />
                   </div>
                   <button type="submit" disabled={loading} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl transition-colors shadow-lg text-sm flex items-center justify-center gap-2">

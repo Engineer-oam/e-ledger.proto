@@ -49,8 +49,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               <Logo size="sm" />
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-tighter">E-LEDGER INDIA</h1>
-              <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Pharma Hub</p>
+              <h1 className="text-xl font-black tracking-tighter">E-LEDGER NETWORK</h1>
+              <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">{user.sector} HUB</p>
             </div>
           </div>
           <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-400 hover:text-white transition-colors">
@@ -60,7 +60,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
 
         <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
           <NavItem to="/dashboard" icon={LayoutDashboard} label="Network Panel" active={location.pathname === '/dashboard'} />
-          <NavItem to="/batches" icon={Pill} label="Drug Inventory" active={location.pathname === '/batches'} />
+          <NavItem to="/batches" icon={Pill} label="Inventory" active={location.pathname === '/batches'} />
           <NavItem to="/blockchain" icon={LinkIcon} label="Chain Explorer" active={location.pathname === '/blockchain'} />
           <NavItem to="/financials" icon={Wallet} label="Sales & Tax" active={location.pathname === '/financials'} />
           <NavItem to="/verify" icon={ScanLine} label="Verify Authenticity" active={location.pathname === '/verify'} />
@@ -96,7 +96,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           <div className="flex items-center gap-4 md:gap-6">
              <div className="hidden sm:flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
                <Activity size={14} className="text-emerald-600" />
-               <span className="text-[10px] font-black uppercase text-emerald-800">DSCSA / GS1 Ready</span>
+               <span className="text-[10px] font-black uppercase text-emerald-800">Global Trade / GS1 Ready</span>
              </div>
              <div className="flex flex-col items-end">
                <span className="text-[10px] text-slate-400 font-black uppercase">License ID</span>

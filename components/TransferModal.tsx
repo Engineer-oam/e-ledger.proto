@@ -1,19 +1,19 @@
 
 import React, { useState } from 'react';
-import { Batch, User, GSTDetails, EWayBill, PaymentStatus } from '../types';
-import { Truck, FileText, IndianRupee, ShieldCheck, Printer, ArrowRight, CreditCard, MapPin, Check, User as UserIcon, ArrowLeft, Package, Banknote, Percent, AlertCircle } from 'lucide-react';
+import { Batch, User, GSTDetails, EWayBill, PaymentStatus, StakeholderRole, Stakeholder, ExportDetails } from '../types';
+import { Truck, FileText, DollarSign, ShieldCheck, Printer, ArrowRight, CreditCard, MapPin, Check, User as UserIcon, ArrowLeft, Package, Banknote, Percent, AlertCircle, Globe, Anchor, Users } from 'lucide-react';
 import { toast } from 'react-toastify';
 import PrintableInvoice from './PrintableInvoice';
 
 interface TransferModalProps {
   batches: Batch[]; 
   onClose: () => void;
-  onSubmit: (toGLN: string, toName: string, gst?: GSTDetails, ewbPartial?: Partial<EWayBill>, payment?: any) => Promise<void>;
+  onSubmit: (toGLN: string, toName: string, gst?: GSTDetails, ewbPartial?: Partial<EWayBill>, payment?: any, exportDetails?: ExportDetails, stakeholders?: Stakeholder[]) => Promise<void>;
   currentUser: User;
 }
 
 const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmit, currentUser }) => {
-  const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Recipient, 2: Compliance, 3: Payment
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1); // 1: Recipient, 2: Compliance, 3: Export, 4: Stakeholders, 5: Payment
   const [loading, setLoading] = useState(false);
   const [printData, setPrintData] = useState<any>(null);
   
@@ -22,7 +22,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
   
   // Step 2: Compliance Info (EWB & GST)
   const [gstData, setGstData] = useState({
-    hsn: '2208', // Standard HSN for Spirits
+    hsn: '3004', // Standard HSN for Products
     value: 10000 * batches.length, 
     rate: 18,
     invoiceNo: `INV-${Date.now().toString().slice(-6)}`,
@@ -35,7 +35,26 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
     toPlace: ''
   });
 
-  // Step 3: Payment Info
+  // Step 3: Export Details
+  const [exportData, setExportData] = useState<ExportDetails>({
+    isExport: false,
+    countryOfOrigin: currentUser.country || 'IN',
+    portOfEntry: '',
+    portOfExit: '',
+    currency: 'USD',
+    customsDutyRate: 0,
+    incoterms: 'FOB'
+  });
+
+  // Step 4: Stakeholders
+  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
+  const [newStakeholder, setNewStakeholder] = useState<Partial<Stakeholder>>({
+    role: StakeholderRole.LOGISTICS_PROVIDER,
+    name: '',
+    gln: ''
+  });
+
+  // Step 5: Payment Info
   const taxAmount = (gstData.value * gstData.rate) / 100;
   const totalAmount = gstData.value + taxAmount;
 
@@ -62,7 +81,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
 
   const validateStep2 = () => {
       if (!transportData.vehicleNo) {
-          toast.warn("Vehicle Number is required for E-Way Bill.");
+          toast.warn("Vehicle / Vessel Number is required for Transit Docs.");
           return false;
       }
       if (transportData.distance <= 0) {
@@ -87,7 +106,24 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
       } else if (step === 2) {
           if (!validateStep2()) return;
           setStep(3);
+      } else if (step === 3) {
+          setStep(4);
+      } else if (step === 4) {
+          setStep(5);
       }
+  };
+
+  const addStakeholder = () => {
+    if (!newStakeholder.name || !newStakeholder.gln) {
+        toast.warn("Name and GLN required for stakeholder");
+        return;
+    }
+    setStakeholders([...stakeholders, { ...newStakeholder, id: Date.now().toString() } as Stakeholder]);
+    setNewStakeholder({ role: StakeholderRole.LOGISTICS_PROVIDER, name: '', gln: '' });
+  };
+
+  const removeStakeholder = (id: string) => {
+    setStakeholders(stakeholders.filter(s => s.id !== id));
   };
 
   const handleSubmit = async () => {
@@ -129,7 +165,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
     };
 
     try {
-      await onSubmit(recipient.gln, recipient.name, gst, ewbPartial, paymentMeta);
+      await onSubmit(recipient.gln, recipient.name, gst, ewbPartial, paymentMeta, exportData.isExport ? exportData : undefined, stakeholders);
       
       // Prepare print data on success
       setPrintData({
@@ -212,7 +248,11 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                 <StepConnector active={step > 1} />
                 <StepIndicator num={2} label="Compliance" active={step === 2} completed={step > 2} />
                 <StepConnector active={step > 2} />
-                <StepIndicator num={3} label="Payment" active={step === 3} completed={step > 3} />
+                <StepIndicator num={3} label="Export" active={step === 3} completed={step > 3} />
+                <StepConnector active={step > 3} />
+                <StepIndicator num={4} label="Stakeholders" active={step === 4} completed={step > 4} />
+                <StepConnector active={step > 4} />
+                <StepIndicator num={5} label="Payment" active={step === 5} completed={step > 5} />
             </div>
         </div>
 
@@ -279,12 +319,12 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                     <div className="space-y-4">
                         <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
                            <Truck className="text-emerald-500" size={18} />
-                           Logistics & E-Way Bill
+                           Logistics & Transit Docs
                         </h4>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Vehicle No</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Vehicle / Vessel No</label>
                                 <input 
                                     value={transportData.vehicleNo} 
                                     onChange={e => setTransportData({...transportData, vehicleNo: e.target.value})}
@@ -329,13 +369,13 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                     {/* Tax Section */}
                     <div className="space-y-4">
                         <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-                           <IndianRupee className="text-blue-500" size={18} />
-                           Invoice & Tax
+                           <DollarSign className="text-blue-500" size={18} />
+                           Commercial Invoice & Duty
                         </h4>
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="md:col-span-1">
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">HSN Code</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">HS Code</label>
                                 <input 
                                     value={gstData.hsn} 
                                     onChange={e => setGstData({...gstData, hsn: e.target.value})}
@@ -343,7 +383,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                                 />
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Taxable Value (₹)</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Taxable Value</label>
                                 <input 
                                     type="number"
                                     value={gstData.value} 
@@ -356,13 +396,143 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                 </div>
             )}
 
-            {/* Step 3: Payment */}
+            {/* Step 3: Export Details */}
             {step === 3 && (
+                <div className="space-y-6 animate-in slide-in-from-right-8 fade-in duration-300">
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg text-blue-600 mt-1">
+                            <Globe size={20} />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-blue-900">Cross-Border / Export Declaration</h4>
+                            <p className="text-sm text-blue-700 mt-1">Enable this section if the goods are leaving the country.</p>
+                        </div>
+                        <div className="ml-auto">
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" className="sr-only peer" checked={exportData.isExport} onChange={e => setExportData({...exportData, isExport: e.target.checked})} />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    {exportData.isExport && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Country of Origin</label>
+                                    <input 
+                                        value={exportData.countryOfOrigin} 
+                                        onChange={e => setExportData({...exportData, countryOfOrigin: e.target.value})}
+                                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Incoterms</label>
+                                    <select 
+                                        value={exportData.incoterms} 
+                                        onChange={e => setExportData({...exportData, incoterms: e.target.value})}
+                                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                    >
+                                        <option value="EXW">EXW - Ex Works</option>
+                                        <option value="FOB">FOB - Free on Board</option>
+                                        <option value="CIF">CIF - Cost, Insurance & Freight</option>
+                                        <option value="DDP">DDP - Delivered Duty Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Port of Exit</label>
+                                    <div className="relative">
+                                        <Anchor size={14} className="absolute left-3 top-2.5 text-slate-400" />
+                                        <input 
+                                            value={exportData.portOfExit} 
+                                            onChange={e => setExportData({...exportData, portOfExit: e.target.value})}
+                                            placeholder="e.g. Mumbai Port"
+                                            className="w-full pl-9 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Port of Entry</label>
+                                    <div className="relative">
+                                        <Anchor size={14} className="absolute left-3 top-2.5 text-slate-400" />
+                                        <input 
+                                            value={exportData.portOfEntry} 
+                                            onChange={e => setExportData({...exportData, portOfEntry: e.target.value})}
+                                            placeholder="e.g. Dubai Port"
+                                            className="w-full pl-9 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Step 4: Stakeholders */}
+            {step === 4 && (
+                <div className="space-y-6 animate-in slide-in-from-right-8 fade-in duration-300">
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-4">
+                            <Users size={18} className="text-indigo-600" />
+                            Add Supply Chain Stakeholders
+                        </h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                            <select 
+                                value={newStakeholder.role} 
+                                onChange={e => setNewStakeholder({...newStakeholder, role: e.target.value as StakeholderRole})}
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"
+                            >
+                                {Object.values(StakeholderRole).map(role => (
+                                    <option key={role} value={role}>{role.replace('_', ' ')}</option>
+                                ))}
+                            </select>
+                            <input 
+                                value={newStakeholder.name} 
+                                onChange={e => setNewStakeholder({...newStakeholder, name: e.target.value})}
+                                placeholder="Name"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            />
+                            <input 
+                                value={newStakeholder.gln} 
+                                onChange={e => setNewStakeholder({...newStakeholder, gln: e.target.value})}
+                                placeholder="GLN"
+                                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                            />
+                        </div>
+                        <button onClick={addStakeholder} className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors">
+                            Add Stakeholder
+                        </button>
+                    </div>
+
+                    <div className="space-y-2">
+                        {stakeholders.map(s => (
+                            <div key={s.id} className="flex justify-between items-center p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
+                                <div>
+                                    <p className="font-bold text-slate-800 text-sm">{s.name}</p>
+                                    <p className="text-xs text-slate-500">{s.role.replace('_', ' ')} • {s.gln}</p>
+                                </div>
+                                <button onClick={() => removeStakeholder(s.id)} className="text-red-500 hover:text-red-700 text-xs font-bold">Remove</button>
+                            </div>
+                        ))}
+                        {stakeholders.length === 0 && (
+                            <p className="text-center text-slate-400 text-sm py-4">No additional stakeholders added.</p>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Step 5: Payment */}
+            {step === 5 && (
                 <div className="space-y-6 animate-in slide-in-from-right-8 fade-in duration-300">
                     <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 text-center">
                         <p className="text-slate-500 text-sm font-medium uppercase mb-1">Total Invoice Amount</p>
-                        <p className="text-3xl font-bold text-slate-900">₹{totalAmount.toLocaleString()}</p>
-                        <p className="text-xs text-slate-400 mt-2">Includes ₹{taxAmount.toLocaleString()} Tax ({gstData.rate}%)</p>
+                        <p className="text-3xl font-bold text-slate-900">{totalAmount.toLocaleString()}</p>
+                        <p className="text-xs text-slate-400 mt-2">Includes {taxAmount.toLocaleString()} Tax ({gstData.rate}%)</p>
                     </div>
 
                     <div className="space-y-4">
@@ -370,7 +540,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Amount Paid</label>
                                 <div className="relative">
-                                    <IndianRupee size={16} className="absolute left-3 top-3 text-slate-400" />
+                                    <DollarSign size={16} className="absolute left-3 top-3 text-slate-400" />
                                     <input 
                                         type="number" 
                                         className="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -388,9 +558,9 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                                         value={paymentData.method}
                                         onChange={e => setPaymentData({...paymentData, method: e.target.value})}
                                     >
-                                        <option value="BANK_TRANSFER">Bank Transfer (NEFT/RTGS)</option>
-                                        <option value="UPI">UPI</option>
-                                        <option value="CHEQUE">Cheque / DD</option>
+                                        <option value="BANK_TRANSFER">Bank Transfer (SWIFT/Wire)</option>
+                                        <option value="UPI">Digital Wallet</option>
+                                        <option value="CHEQUE">Cheque / Draft</option>
                                         <option value="CASH">Cash</option>
                                         <option value="CREDIT_CARD">Credit Card</option>
                                     </select>
@@ -399,7 +569,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Waiver / Discount (₹)</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Waiver / Discount</label>
                             <div className="relative">
                                 <Percent size={16} className="absolute left-3 top-3 text-slate-400" />
                                 <input 
@@ -426,7 +596,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Payment Notes</label>
                             <input 
                                 className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-slate-400 outline-none"
-                                placeholder="Cheque No, Transaction ID, Waiver Reason..."
+                                placeholder="Ref No, Transaction ID, Waiver Reason..."
                                 value={paymentData.notes}
                                 onChange={e => setPaymentData({...paymentData, notes: e.target.value})}
                             />
@@ -450,7 +620,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                 <div></div> // Spacer
             )}
 
-            {step < 3 ? (
+            {step < 5 ? (
                 <button 
                     onClick={handleNext}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-indigo-900/20 transition-all hover:translate-y-[-1px]"

@@ -45,15 +45,15 @@ const BatchLabel: React.FC<BatchLabelProps> = ({ gtin, lot, expiry, productName,
                 {/* Warning Text */}
                 <div className="border border-red-600 p-1.5 mb-1">
                     <p className="text-[7px] text-red-600 font-bold leading-tight text-justify">
-                        <span className="font-black">SCHEDULE H PRESCRIPTION DRUG - CAUTION:</span> Not to be sold by retail without the prescription of a Registered Medical Practitioner.
+                        <span className="font-black">REGULATED PRODUCT - CAUTION:</span> Not to be sold by retail without valid authorization or prescription where applicable.
                     </p>
                 </div>
 
                 {/* Header / Product */}
                 <div className="flex justify-between items-start">
                     <div>
-                        <h4 className="font-bold text-sm text-slate-900 uppercase leading-none">{productName || 'Genericin 500'}</h4>
-                        <p className="text-[9px] text-slate-500 font-medium mt-0.5">Film Coated Tablets IP</p>
+                        <h4 className="font-bold text-sm text-slate-900 uppercase leading-none">{productName || 'Generic Product 500'}</h4>
+                        <p className="text-[9px] text-slate-500 font-medium mt-0.5">Standard Unit</p>
                     </div>
                     <div className="text-right">
                         <div className="border border-black p-0.5 inline-block bg-white">
@@ -74,7 +74,7 @@ const BatchLabel: React.FC<BatchLabelProps> = ({ gtin, lot, expiry, productName,
                         <p><span className="font-bold">Exp.Dt:</span> {expDate}</p>
                     </div>
                     <div className="text-[9px] font-mono text-slate-800 space-y-0.5 leading-tight">
-                        <p><span className="font-bold">M.R.P. Rs.:</span> 125.00</p>
+                        <p><span className="font-bold">M.R.P.:</span> 125.00</p>
                         <p className="text-[8px] text-slate-500">(Incl. of all taxes)</p>
                         <p className="mt-1"><span className="font-bold">GTIN:</span> {gtin.slice(0,14)}</p>
                     </div>
@@ -82,10 +82,10 @@ const BatchLabel: React.FC<BatchLabelProps> = ({ gtin, lot, expiry, productName,
 
                 {/* Manufacturer */}
                 <div className="border-t border-slate-200 pt-1 mt-1">
-                    <p className="text-[8px] text-slate-500">Manufactured in India by:</p>
-                    <p className="text-[9px] font-bold text-slate-800">BHARAT BIOTECH & LIFE SCIENCES</p>
-                    <p className="text-[8px] text-slate-500">Plot No. 402, Industrial Area, Baddi, H.P.</p>
-                    <p className="text-[8px] text-slate-500 font-mono">Mfg. Lic. No.: M/765/2023</p>
+                    <p className="text-[8px] text-slate-500">Manufactured by:</p>
+                    <p className="text-[9px] font-bold text-slate-800">NATIONAL SUPPLY CORP</p>
+                    <p className="text-[8px] text-slate-500">Industrial Zone, Sector 4</p>
+                    <p className="text-[8px] text-slate-500 font-mono">Lic. No.: M/765/2023</p>
                 </div>
             </div>
         </div>

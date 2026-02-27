@@ -70,7 +70,7 @@ const ProductVerifier: React.FC = () => {
         if (user) {
             setPartnerResult(user);
         } else {
-            setError('GLN not found in National Registry. This entity may be unauthorized.');
+            setError('GLN not found in Global Registry. This entity may be unauthorized.');
         }
     } catch (err) {
         setError('Verification Service Unavailable.');
@@ -324,7 +324,7 @@ const ProductVerifier: React.FC = () => {
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
                                     <MapPin size={12} /> Jurisdiction
                                 </p>
-                                <p className="text-lg font-bold text-slate-800">{partnerResult.country === 'IN' ? 'India (CDSCO/GST)' : partnerResult.country}</p>
+                                <p className="text-lg font-bold text-slate-800">{partnerResult.country === 'IN' ? 'India (GST/Reg)' : 'Global / Cross-Border'}</p>
                             </div>
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">

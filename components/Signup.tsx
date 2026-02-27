@@ -15,8 +15,8 @@ const Signup: React.FC = () => {
     name: '',
     orgName: '',
     gln: '',
-    country: 'IN',
-    sector: Sector.PHARMA, // Forced to Pharma
+    country: 'GL',
+    sector: Sector.GENERAL, // Default to General
     role: UserRole.MANUFACTURER,
     positionLabel: '',
     password: '',
@@ -38,12 +38,11 @@ const Signup: React.FC = () => {
     REGISTRY_CONFIG.find(c => c.code === formData.country), 
   [formData.country]);
 
-  // Always use Pharma config
   const availablePositions = useMemo(() => {
     if (!selectedCountry) return [];
-    const sectorConfig = selectedCountry.sectors[Sector.PHARMA];
+    const sectorConfig = selectedCountry.sectors[formData.sector];
     return sectorConfig ? sectorConfig.roles : [];
-  }, [selectedCountry]);
+  }, [selectedCountry, formData.sector]);
 
   useEffect(() => {
     if (availablePositions.length > 0 && !formData.positionLabel) {
@@ -147,23 +146,23 @@ const Signup: React.FC = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-8">
                 <Logo size="sm" />
-                <span className="font-bold text-lg tracking-tight">E-Ledger India</span>
+                <span className="font-bold text-lg tracking-tight">E-Ledger Network</span>
             </div>
             <h2 className="text-3xl font-black mb-4 tracking-tighter leading-tight">
               Join the <br/>
-              <span className="text-teal-400">Secure Pharma</span> <br/>
+              <span className="text-teal-400">Secure Supply</span> <br/>
               Network.
             </h2>
             <p className="text-slate-400 text-xs leading-relaxed max-w-xs">
-              Onboard your entity to India's unified drug traceability ledger. Ensure compliance with CDSCO & iVEDA mandates.
+              Onboard your entity to the unified cross-enterprise traceability ledger. Ensure compliance with global trade & tax mandates.
             </p>
           </div>
 
           <div className="relative z-10 space-y-8">
              <div className="space-y-4">
                 {[
-                    { title: "Market Context", desc: "India (CDSCO)" }, 
-                    { title: "Legal Identity", desc: "GSTIN / Drug Lic." }, 
+                    { title: "Market Context", desc: "Global (Trade/Reg)" }, 
+                    { title: "Legal Identity", desc: "Tax ID / License" }, 
                     { title: "System Link", desc: "ERP Adapter" }, 
                     { title: "Cryptographic Keys", desc: "Node Security" }
                 ].map((s, idx) => (
@@ -205,7 +204,7 @@ const Signup: React.FC = () => {
                   <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
                     <Logo size="sm" className="scale-75" />
                   </div>
-                  <span className="font-bold text-sm tracking-tight">E-Ledger India</span>
+                  <span className="font-bold text-sm tracking-tight">E-Ledger Network</span>
                </div>
                <h2 className="text-xl font-black">
                  Join the <span className="text-teal-400">Network.</span>
@@ -238,19 +237,28 @@ const Signup: React.FC = () => {
                     </p>
                 </div>
 
-                <div className="p-1 bg-slate-50 rounded-2xl border border-slate-200">
-                    <button type="button" className="w-full bg-white p-6 rounded-xl shadow-sm border border-teal-100 flex items-center justify-between group hover:border-teal-500 transition-colors">
-                        <div className="flex items-center gap-4">
-                            <span className="text-4xl">🇮🇳</span>
-                            <div className="text-left">
-                                <span className="block text-lg font-bold text-slate-900">India</span>
-                                <span className="text-xs text-slate-500 font-medium">CDSCO / GST / iVEDA Protocol</span>
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {REGISTRY_CONFIG.map(country => (
+                        <button 
+                            key={country.code}
+                            type="button" 
+                            onClick={() => setFormData({...formData, country: country.code})}
+                            className={`w-full p-4 rounded-xl shadow-sm border flex items-center justify-between group transition-all ${formData.country === country.code ? 'bg-teal-50 border-teal-500 ring-1 ring-teal-500' : 'bg-white border-slate-200 hover:border-teal-300'}`}
+                        >
+                            <div className="flex items-center gap-4">
+                                <span className="text-2xl">{country.code === 'GL' ? '🌐' : country.code === 'IN' ? '🇮🇳' : country.code === 'US' ? '🇺🇸' : '🇪🇺'}</span>
+                                <div className="text-left">
+                                    <span className={`block text-lg font-bold ${formData.country === country.code ? 'text-teal-900' : 'text-slate-900'}`}>{country.name}</span>
+                                    <span className="text-xs text-slate-500 font-medium">Trade / Regulatory Protocol</span>
+                                </div>
                             </div>
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center text-white">
-                            <Check size={14} />
-                        </div>
-                    </button>
+                            {formData.country === country.code && (
+                                <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center text-white animate-in zoom-in">
+                                    <Check size={14} />
+                                </div>
+                            )}
+                        </button>
+                    ))}
                 </div>
                 
                 <button type="button" onClick={() => setStep(2)} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98]">
@@ -259,8 +267,38 @@ const Signup: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 2: IDENTITY (GST & LICENSE) */}
+            {/* STEP 1.5: SECTOR SELECTION */}
             {step === 2 && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="text-center">
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Select Industry Sector</h3>
+                    <p className="text-sm text-slate-500 max-w-md mx-auto">
+                        Choose the primary trade domain for your node.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                    {Object.values(Sector).map((s) => (
+                        <button
+                            key={s}
+                            type="button"
+                            onClick={() => setFormData({...formData, sector: s})}
+                            className={`p-4 rounded-xl border-2 text-left transition-all ${formData.sector === s ? 'border-teal-500 bg-teal-50 ring-1 ring-teal-500' : 'border-slate-100 hover:border-slate-300'}`}
+                        >
+                            <span className="block text-sm font-bold text-slate-900">{s}</span>
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex gap-3 pt-4 mt-auto">
+                  <button type="button" onClick={() => setStep(1)} className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors">Back</button>
+                  <button type="button" onClick={() => setStep(3)} className="flex-1 bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] uppercase text-xs tracking-widest">Next: Identity</button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: IDENTITY (GST & LICENSE) */}
+            {step === 3 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div>
                     <h3 className="text-xl font-bold text-slate-900">Entity Verification</h3>
@@ -286,7 +324,7 @@ const Signup: React.FC = () => {
 
                 <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-500 uppercase flex justify-between">
-                        <span>GSTIN / Global Location Number</span>
+                        <span>Tax ID / Global Location Number</span>
                         {gstValid === true && <span className="text-teal-600 flex items-center gap-1"><CheckCircle2 size={10} /> Valid Format</span>}
                         {gstValid === false && <span className="text-red-500 flex items-center gap-1"><AlertCircle size={10} /> Invalid Format</span>}
                     </label>
@@ -311,7 +349,7 @@ const Signup: React.FC = () => {
 
                 {/* Simulated File Upload */}
                 <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase">Drug License (Form 20/21)</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Business License / Registration</label>
                     <div 
                         onClick={handleFileUpload}
                         className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all ${licenseFile ? 'border-teal-500 bg-teal-50' : 'border-slate-200 hover:border-teal-400 hover:bg-slate-50'}`}
@@ -333,14 +371,14 @@ const Signup: React.FC = () => {
                 </div>
 
                 <div className="flex gap-3 pt-4 mt-auto">
-                  <button type="button" onClick={() => setStep(1)} className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors">Back</button>
-                  <button type="button" onClick={() => setStep(3)} className="flex-1 bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] uppercase text-xs tracking-widest">Select Role</button>
+                  <button type="button" onClick={() => setStep(2)} className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors">Back</button>
+                  <button type="button" onClick={() => setStep(4)} className="flex-1 bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] uppercase text-xs tracking-widest">Select Role</button>
                 </div>
               </div>
             )}
 
             {/* STEP 3: ROLE & SCOPE */}
-            {step === 3 && (
+            {step === 4 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div>
                     <h3 className="text-xl font-bold text-slate-900">Operational Role</h3>
@@ -390,14 +428,14 @@ const Signup: React.FC = () => {
                 </div>
 
                 <div className="flex gap-3 pt-4 mt-auto">
-                  <button type="button" onClick={() => setStep(2)} className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors">Back</button>
-                  <button type="button" onClick={() => setStep(4)} className="flex-1 bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] uppercase text-xs tracking-widest">Connect System</button>
+                  <button type="button" onClick={() => setStep(3)} className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors">Back</button>
+                  <button type="button" onClick={() => setStep(5)} className="flex-1 bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] uppercase text-xs tracking-widest">Connect System</button>
                 </div>
               </div>
             )}
 
             {/* STEP 4: SECURE & FINALIZE */}
-            {step === 4 && (
+            {step === 5 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div>
                     <h3 className="text-xl font-bold text-slate-900">Secure Node</h3>
@@ -446,7 +484,7 @@ const Signup: React.FC = () => {
                 </div>
 
                 <div className="flex gap-3 pt-2 mt-auto">
-                  <button type="button" onClick={() => setStep(3)} className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors">Back</button>
+                  <button type="button" onClick={() => setStep(4)} className="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors">Back</button>
                   <button type="submit" disabled={loading} className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] uppercase text-xs tracking-widest">
                     {loading ? <Loader2 size={18} className="animate-spin" /> : <span>Initialize Terminal</span>}
                   </button>

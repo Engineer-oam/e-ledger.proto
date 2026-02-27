@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Batch, UserRole, BatchStatus, GSTDetails, EWayBill, ReturnReason, Sector } from '../types';
+import { User, Batch, UserRole, BatchStatus, GSTDetails, EWayBill, ReturnReason, Sector, ExportDetails, Stakeholder } from '../types';
 import { LedgerService } from '../services/ledgerService';
 import { AuthService } from '../services/authService';
 import { Plus, Search, ArrowRight, Package, Zap, Truck, ArrowUpRight, ArrowDownLeft, Send, CheckSquare, Square, Layers, RotateCcw, AlertTriangle, MapPin, IndianRupee, Printer, Filter, Percent, Landmark, Pill, Tag, Stamp, PenTool } from 'lucide-react';
@@ -129,7 +129,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
     }
   };
 
-  const handleTransferSubmit = async (toGLN: string, toName: string, gst?: GSTDetails, ewbPartial?: Partial<EWayBill>, payment?: any) => {
+  const handleTransferSubmit = async (toGLN: string, toName: string, gst?: GSTDetails, ewbPartial?: Partial<EWayBill>, payment?: any, exportDetails?: ExportDetails, stakeholders?: Stakeholder[]) => {
     const batchesToTransfer = getSelectedBatches();
     if (batchesToTransfer.length === 0) return;
     
@@ -141,7 +141,9 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
             user,
             gst,
             ewbPartial,
-            payment
+            payment,
+            exportDetails,
+            stakeholders
         );
         toast.success(`Dispatched ${batchesToTransfer.length} items to ${toName}`);
         fetchData();
@@ -234,7 +236,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
       taxRate: 12,
       mrp: Math.floor(Math.random() * 500) + 100
     });
-    toast.info(`Pharma data auto-filled`);
+    toast.info(`Demo data auto-filled`);
   };
 
   const getStatusColor = (status: BatchStatus) => {
@@ -257,8 +259,8 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
     <div className="w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-            <h2 className="text-2xl font-bold text-slate-800">Pharmaceutical Inventory</h2>
-            <p className="text-sm text-slate-500">Track drug batches, expiry, and compliance status.</p>
+            <h2 className="text-2xl font-bold text-slate-800">Inventory Management</h2>
+            <p className="text-sm text-slate-500">Track product batches, expiry, and compliance status.</p>
         </div>
         
         <div className="flex gap-2 w-full sm:w-auto">
@@ -308,7 +310,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                     <Search className="text-slate-400 shrink-0" size={18} />
                     <input 
                         type="text" 
-                        placeholder="Search medicines..." 
+                        placeholder="Search inventory..." 
                         className="flex-1 outline-none text-slate-700 bg-transparent placeholder-slate-400 min-w-0 text-sm"
                     />
                 </div>
@@ -362,7 +364,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                 <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
                     <th className="px-4 py-4 w-10"></th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Product / Dosage</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Product / Variant</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">GTIN</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Category</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
@@ -681,7 +683,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
               <div className="mb-4">
                 <button onClick={handleAutoFill} className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors border border-emerald-200">
                   <Zap size={16} className="text-emerald-600 fill-current" />
-                  <span>Auto-Fill (Simulate Pharma Data)</span>
+                  <span>Auto-Fill (Simulate Data)</span>
                 </button>
               </div>
               <form onSubmit={handleCreate} className="space-y-5 flex-1">
@@ -690,7 +692,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                   <div className="space-y-4">
                     <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 border-b pb-1">
                       <Package size={16} className="text-emerald-600" />
-                      Drug Specifics
+                      Product Specifics
                     </h4>
                     <div><label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Product Name</label><input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" value={formData.productName} onChange={e => setFormData({...formData, productName: e.target.value})} placeholder="e.g. Amoxicillin 500mg" /></div>
                     
@@ -706,7 +708,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Form / Strength</label>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Variant / Type</label>
                         <input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" value={formData.dosageForm} onChange={e => setFormData({...formData, dosageForm: e.target.value})} placeholder="e.g. 500mg Tablet" />
                       </div>
                     </div>

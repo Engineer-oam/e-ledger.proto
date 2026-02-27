@@ -219,7 +219,7 @@ const ERPModule: React.FC<ERPModuleProps> = ({ user }) => {
               <h4 className="text-xs font-bold text-slate-400 uppercase mb-4">Stock Heatmap</h4>
               <div className="space-y-4">
                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-600">Pharma Cold-Chain</span>
+                    <span className="text-slate-600">Cold-Chain Storage</span>
                     <span className="font-bold text-emerald-600">Optimal</span>
                  </div>
                  <div className="flex justify-between items-center text-xs">
@@ -297,11 +297,95 @@ const ERPModule: React.FC<ERPModuleProps> = ({ user }) => {
                  <span>Replenishment AI</span>
               </h4>
               <p className="text-xs text-indigo-700 leading-relaxed">
-                Based on current velocity in {user.country}, you should re-order 4 cases of {user.sector === Sector.PHARMA ? 'Ointments' : 'Premium Spirits'} by Thursday to avoid stockouts.
+                Based on current velocity in {user.country}, you should re-order 4 cases of {user.sector === Sector.PHARMA ? 'Products' : 'Premium Spirits'} by Thursday to avoid stockouts.
               </p>
            </div>
         </div>
       </div>
+    </div>
+  );
+
+  const renderInspectionERP = () => (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <p className="text-xs font-bold text-slate-400 uppercase mb-1">Pending Requests</p>
+          <h4 className="text-2xl font-black text-slate-800">12</h4>
+          <div className="mt-4 flex items-center gap-2 text-xs text-indigo-600 font-bold">
+            <Clock size={14} />
+            <span>Avg Wait: 4h</span>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <p className="text-xs font-bold text-slate-400 uppercase mb-1">Certificates Issued</p>
+          <h4 className="text-2xl font-black text-emerald-600">845</h4>
+          <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
+            <CheckCircle2 size={14} className="text-emerald-500" />
+            <span>This Month</span>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <p className="text-xs font-bold text-slate-400 uppercase mb-1">Revenue</p>
+          <h4 className="text-2xl font-black text-blue-600">$12.4k</h4>
+          <div className="mt-4 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-blue-600 h-full w-[65%]"></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 className="font-bold text-slate-800 flex items-center gap-2">
+            <Scan size={20} className="text-indigo-600" />
+            <span>Inspection Queue</span>
+          </h3>
+          <button className="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2">
+            <Plus size={14} /> New Audit
+          </button>
+        </div>
+        <div className="p-12 text-center text-slate-400">
+            <Scan size={48} className="mx-auto mb-4 opacity-20" />
+            <p className="text-sm font-bold">No pending inspections in queue.</p>
+            <p className="text-xs opacity-60">Connect to the Network Panel to receive requests.</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderFinancierERP = () => (
+    <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <IndianRupee size={20} className="text-emerald-600" />
+                    <span>Trade Finance Exposure</span>
+                </h3>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-slate-500">Letters of Credit (Active)</span>
+                        <span className="font-bold text-slate-900">$4.2M</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-slate-500">Invoice Factoring</span>
+                        <span className="font-bold text-slate-900">$1.8M</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-2">
+                        <div className="bg-emerald-500 h-full w-[45%]"></div>
+                    </div>
+                </div>
+            </div>
+            <div className="bg-indigo-900 text-white p-6 rounded-2xl shadow-xl">
+                <h3 className="font-bold text-lg mb-2">Risk Assessment AI</h3>
+                <p className="text-indigo-200 text-xs mb-6">Real-time credit scoring based on E-Ledger transaction history.</p>
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border-4 border-indigo-400 flex items-center justify-center font-bold text-sm">A+</div>
+                    <div>
+                        <p className="font-bold text-sm">Portfolio Health</p>
+                        <p className="text-[10px] text-indigo-300">Updated 14m ago</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
   );
 
@@ -319,26 +403,42 @@ const ERPModule: React.FC<ERPModuleProps> = ({ user }) => {
             <form className="p-6 space-y-4" onSubmit={(e) => {
               e.preventDefault();
               const form = e.target as any;
+              
+              let sectorSpecifics = {};
+              if (user.sector === Sector.EXCISE) {
+                  sectorSpecifics = { abv: 42.8, vatId: form.context.value };
+              } else if (user.sector === Sector.AGRICULTURE) {
+                  sectorSpecifics = { harvestDate: new Date().toISOString(), farmId: form.context.value };
+              } else if (user.sector === Sector.TEXTILE) {
+                  sectorSpecifics = { fabricType: 'Cotton', batchId: form.context.value };
+              } else {
+                  sectorSpecifics = { temp: 'Standard', lotId: form.context.value };
+              }
+
               ERPService.createProductionOrder(user, {
                 productName: form.productName.value,
                 plannedQty: parseInt(form.plannedQty.value),
-                sectorSpecifics: user.sector === Sector.EXCISE ? { abv: 42.8, vatId: form.context.value } : { temp: '2-8C', lotId: form.context.value }
+                sectorSpecifics
               });
               toast.success("New production run scheduled.");
               setShowPOModal(false);
               refreshData();
             }}>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Product Brand</label>
-                <input name="productName" required className="w-full border p-3 rounded-xl outline-none focus:ring-2 ring-indigo-500" placeholder="e.g. Blue Label 750ml" />
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Product Name</label>
+                <input name="productName" required className="w-full border p-3 rounded-xl outline-none focus:ring-2 ring-indigo-500" placeholder="e.g. Product Name" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Planned Quantity</label>
                 <input name="plannedQty" type="number" required className="w-full border p-3 rounded-xl outline-none focus:ring-2 ring-indigo-500" placeholder="5000" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{user.sector === Sector.EXCISE ? 'Vat ID' : 'Target Lot'}</label>
-                <input name="context" required className="w-full border p-3 rounded-xl outline-none focus:ring-2 ring-indigo-500 font-mono" placeholder="VAT-109" />
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                    {user.sector === Sector.EXCISE ? 'Vat ID' : 
+                     user.sector === Sector.AGRICULTURE ? 'Farm ID' :
+                     user.sector === Sector.TEXTILE ? 'Batch ID' : 'Lot Number'}
+                </label>
+                <input name="context" required className="w-full border p-3 rounded-xl outline-none focus:ring-2 ring-indigo-500 font-mono" placeholder="ID-123" />
               </div>
               <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg mt-4">Release to Floor</button>
             </form>
@@ -420,6 +520,8 @@ const ERPModule: React.FC<ERPModuleProps> = ({ user }) => {
           {user.role === UserRole.MANUFACTURER && renderManufacturerERP()}
           {user.role === UserRole.DISTRIBUTOR && renderDistributorERP()}
           {user.role === UserRole.RETAILER && renderRetailerERP()}
+          {user.role === UserRole.INSPECTION_AGENCY && renderInspectionERP()}
+          {user.role === UserRole.FINANCIER && renderFinancierERP()}
         </>
       )}
 

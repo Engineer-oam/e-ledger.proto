@@ -164,7 +164,7 @@ const Assistant: React.FC = () => {
         </form>
         <div className="mt-4 flex items-center justify-center gap-6">
            <button type="button" onClick={() => setInput("Show me all batches with unpaid duty.")} className="text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Analyze Duty Risks</button>
-           <button type="button" onClick={() => setInput("Identify high-risk pharma batches.")} className="text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Expiry Forecaster</button>
+           <button type="button" onClick={() => setInput("Identify high-risk inventory.")} className="text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Expiry Forecaster</button>
            <button type="button" onClick={() => setInput("Who are the top manufacturers this month?")} className="text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Partner Insights</button>
         </div>
       </div>
