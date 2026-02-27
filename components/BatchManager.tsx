@@ -37,23 +37,60 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
 
   const [loading, setLoading] = useState(true);
 
-  // Pharma-Specific Initial Form State
-  const getInitialFormData = () => ({
-    gtin: '',
-    productName: '',
-    lotNumber: '',
-    expiryDate: '',
-    quantity: 0,
-    unit: 'Packs',
-    alcoholContent: 0, // Not used in Pharma UI but kept for type compatibility
-    dosageForm: '',
-    category: 'Prescription (Rx)',
-    isDutyPaid: true, // Pharma usually tax paid at source or irrelevant for "duty" status (unlike Excise)
-    hsnCode: '3004',
-    taxableValue: 0,
-    taxRate: 12, // Standard GST for medicines often 12% or 18%
-    mrp: 0
-  });
+  // Sector-Specific Initial Form State
+  const getInitialFormData = () => {
+    const base = {
+      gtin: '',
+      productName: '',
+      lotNumber: '',
+      expiryDate: '',
+      quantity: 0,
+      taxableValue: 0,
+      mrp: 0,
+      dosageForm: '',
+      alcoholContent: 0
+    };
+
+    switch (user.sector) {
+      case Sector.PHARMA:
+        return {
+          ...base,
+          unit: 'Packs',
+          category: 'Prescription (Rx)',
+          isDutyPaid: true,
+          hsnCode: '3004',
+          taxRate: 12
+        };
+      case Sector.EXCISE:
+        return {
+          ...base,
+          unit: 'Cases',
+          category: 'IMFL',
+          alcoholContent: 42.8,
+          isDutyPaid: false,
+          hsnCode: '2208',
+          taxRate: 18
+        };
+      case Sector.FMCG:
+        return {
+          ...base,
+          unit: 'Units',
+          category: 'Consumer Goods',
+          isDutyPaid: true,
+          hsnCode: '3304',
+          taxRate: 18
+        };
+      default:
+        return {
+          ...base,
+          unit: 'Units',
+          category: 'General',
+          isDutyPaid: true,
+          hsnCode: '',
+          taxRate: 18
+        };
+    }
+  };
 
   const [formData, setFormData] = useState(getInitialFormData());
   
@@ -105,7 +142,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
       // Inject signature into batch data payload
       const batchPayload: Partial<Batch> = {
         ...formData,
-        sector: Sector.PHARMA,
+        sector: user.sector,
         country: user.country,
         dutyPaid: formData.isDutyPaid,
         status: BatchStatus.CREATED, 
@@ -207,14 +244,37 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
   };
 
   const handleAutoFill = () => {
-    const pharmaProducts = ['Amoxicillin 500mg', 'Paracetamol IP', 'Insulin Glargine', 'Azithromycin Tabs', 'Vitamix-D3'];
-    const dosageForms = ['Tablet', 'Capsule', 'Injectable', 'Syrup', 'Tablet'];
-    const categories = ['Prescription (Rx)', 'OTC', 'Biologic', 'Prescription (Rx)', 'Supplement'];
+    let products: string[] = [];
+    let forms: string[] = [];
+    let cats: string[] = [];
+    let unit = 'Units';
+    let hsn = '0000';
+    let tax = 18;
+
+    if (user.sector === Sector.PHARMA) {
+        products = ['Amoxicillin 500mg', 'Paracetamol IP', 'Insulin Glargine', 'Azithromycin Tabs', 'Vitamix-D3'];
+        forms = ['Tablet', 'Capsule', 'Injectable', 'Syrup', 'Tablet'];
+        cats = ['Prescription (Rx)', 'OTC', 'Biologic', 'Prescription (Rx)', 'Supplement'];
+        unit = 'Packs';
+        hsn = '3004';
+        tax = 12;
+    } else if (user.sector === Sector.EXCISE) {
+        products = ['Royal Challenge', 'Old Monk Rum', 'Signature Premier', 'Blenders Pride', 'Kingfisher Ultra'];
+        forms = ['750ml Bottle', '180ml Nip', '375ml Pint', '750ml Bottle', '500ml Can'];
+        cats = ['IMFL', 'Rum', 'Whisky', 'Whisky', 'Beer'];
+        unit = 'Cases';
+        hsn = '2208';
+        tax = 18; // VAT/Excise varies but using standard placeholder
+    } else {
+        products = ['Premium Basmati Rice', 'Organic Honey', 'Cotton Shirt XL', 'LED Bulb 9W', 'Solar Panel 200W'];
+        forms = ['5kg Bag', '500g Jar', 'Piece', 'Box', 'Panel'];
+        cats = ['Food', 'Food', 'Textile', 'Electronics', 'Energy'];
+        unit = 'Units';
+        hsn = '3304';
+        tax = 18;
+    }
     
-    const idx = Math.floor(Math.random() * pharmaProducts.length);
-    const mockProduct = pharmaProducts[idx];
-    const mockDosage = dosageForms[idx];
-    const mockCategory = categories[idx];
+    const idx = Math.floor(Math.random() * products.length);
     
     const randomLot = `LOT-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`;
     const futureDate = new Date();
@@ -222,21 +282,21 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
     
     setFormData({
       gtin: AuthService.generateGTIN(),
-      productName: mockProduct,
+      productName: products[idx],
       lotNumber: randomLot,
       expiryDate: futureDate.toISOString().split('T')[0],
       quantity: Math.floor(Math.random() * 500) + 50,
-      unit: 'Packs',
-      alcoholContent: 0,
-      dosageForm: mockDosage,
-      category: mockCategory,
-      isDutyPaid: true,
-      hsnCode: '3004',
+      unit: unit,
+      alcoholContent: user.sector === Sector.EXCISE ? 42.8 : 0,
+      dosageForm: forms[idx],
+      category: cats[idx],
+      isDutyPaid: user.sector !== Sector.EXCISE,
+      hsnCode: hsn,
       taxableValue: (Math.floor(Math.random() * 500) + 50) * 450,
-      taxRate: 12,
+      taxRate: tax,
       mrp: Math.floor(Math.random() * 500) + 100
     });
-    toast.info(`Demo data auto-filled`);
+    toast.info(`Demo data auto-filled for ${user.sector}`);
   };
 
   const getStatusColor = (status: BatchStatus) => {

@@ -118,7 +118,7 @@ const Signup: React.FC = () => {
         formData.password,
         {
           country: formData.country,
-          sector: Sector.PHARMA,
+          sector: formData.sector,
           positionLabel: formData.positionLabel,
           erpType: formData.erpType,
           erpStatus: formData.erpType === ERPType.MANUAL ? 'CONNECTED' : 'PENDING',
