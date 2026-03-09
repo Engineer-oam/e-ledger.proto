@@ -1,5 +1,38 @@
 
 
+export enum State {
+  ANDHRA_PRADESH = 'Andhra Pradesh',
+  ARUNACHAL_PRADESH = 'Arunachal Pradesh',
+  ASSAM = 'Assam',
+  BIHAR = 'Bihar',
+  CHHATTISGARH = 'Chhattisgarh',
+  GOA = 'Goa',
+  GUJARAT = 'Gujarat',
+  HARYANA = 'Haryana',
+  HIMACHAL_PRADESH = 'Himachal Pradesh',
+  JHARKHAND = 'Jharkhand',
+  KARNATAKA = 'Karnataka',
+  KERALA = 'Kerala',
+  MADHYA_PRADESH = 'Madhya Pradesh',
+  MAHARASHTRA = 'Maharashtra',
+  MANIPUR = 'Manipur',
+  MEGHALAYA = 'Meghalaya',
+  MIZORAM = 'Mizoram',
+  NAGALAND = 'Nagaland',
+  ODISHA = 'Odisha',
+  PUNJAB = 'Punjab',
+  RAJASTHAN = 'Rajasthan',
+  SIKKIM = 'Sikkim',
+  TAMIL_NADU = 'Tamil Nadu',
+  TELANGANA = 'Telangana',
+  TRIPURA = 'Tripura',
+  UTTAR_PRADESH = 'Uttar Pradesh',
+  UTTARAKHAND = 'Uttarakhand',
+  WEST_BENGAL = 'West Bengal',
+  DELHI = 'Delhi',
+  PUDUCHERRY = 'Puducherry'
+}
+
 export enum Sector {
   EXCISE = 'EXCISE',
   PHARMA = 'PHARMA',
@@ -33,7 +66,15 @@ export enum UserRole {
   LOGISTICS_PROVIDER = 'LOGISTICS_PROVIDER',
   CUSTOMS_OFFICIAL = 'CUSTOMS_OFFICIAL',
   PORT_OPERATOR = 'PORT_OPERATOR',
-  SYSTEM_ADMIN = 'SYSTEM_ADMIN'
+  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
+  // Excise Specific Roles
+  STATE_EXCISE_COMMISSIONER = 'STATE_EXCISE_COMMISSIONER',
+  DISTRICT_EXCISE_OFFICER = 'DISTRICT_EXCISE_OFFICER',
+  DISTILLERY = 'DISTILLERY',
+  BREWERY = 'BREWERY',
+  WHOLESALER = 'WHOLESALER',
+  RETAIL_VEND = 'RETAIL_VEND',
+  BAR_RESTAURANT = 'BAR_RESTAURANT'
 }
 
 export enum BatchStatus {
@@ -65,6 +106,32 @@ export interface TraceEvent {
   returnReason?: ReturnReason;
   returnQuantity?: number;
   returnRecipientGLN?: string;
+
+  // e-Pass specific fields
+  ePassNo?: string;
+  vehicleNo?: string;
+}
+
+export enum LiquorType {
+  IMFL = 'IMFL',
+  CL = 'CL',
+  BEER = 'BEER',
+  WINE = 'WINE',
+  BIO = 'BIO',
+  RTD = 'RTD',
+  ENA = 'ENA',
+  RS = 'RS'
+}
+
+export enum PackageSize {
+  NIP_180ML = '180ML',
+  PINT_375ML = '375ML',
+  QUART_750ML = '750ML',
+  MAGNUM_1500ML = '1500ML',
+  CAN_330ML = '330ML',
+  CAN_500ML = '500ML',
+  KEG_30L = '30L',
+  BULK = 'BULK'
 }
 
 export interface Batch {
@@ -85,6 +152,13 @@ export interface Batch {
   // Dynamic Context
   sector: Sector;
   country: string;
+  
+  // Excise Specific
+  liquorType?: LiquorType;
+  packageSize?: PackageSize;
+  bulkLiters?: number;
+  proofLiters?: number;
+  alcoholicStrength?: number;
   
   // Industry Specific
   alcoholContent?: number; 
@@ -114,6 +188,7 @@ export interface User {
   gln: string;
   orgName: string;
   country: string;
+  state?: State | string;
   sector: Sector;
   positionLabel: string;
   erpType: ERPType;
@@ -200,6 +275,13 @@ export enum StakeholderRole {
   PHARMA_COMPANY = 'PHARMA_COMPANY',
   FMCG_COMPANY = 'FMCG_COMPANY',
   MSME = 'MSME',
+  
+  // Excise Specific Roles
+  DISTILLERY = 'DISTILLERY',
+  BREWERY = 'BREWERY',
+  WHOLESALER = 'WHOLESALER',
+  RETAIL_VEND = 'RETAIL_VEND',
+  BAR_RESTAURANT = 'BAR_RESTAURANT',
 
   // Workflow Validators
   INSPECTION_AGENCY = 'INSPECTION_AGENCY',
@@ -212,6 +294,8 @@ export enum StakeholderRole {
   CUSTOMS_OFFICIAL = 'CUSTOMS_OFFICIAL',
   REGULATOR = 'REGULATOR',
   TRADE_AUTHORITY = 'TRADE_AUTHORITY', // DGFT, State Depts
+  STATE_EXCISE_COMMISSIONER = 'STATE_EXCISE_COMMISSIONER',
+  DISTRICT_EXCISE_OFFICER = 'DISTRICT_EXCISE_OFFICER',
   
   // Financial Participants
   BANKER = 'BANKER',
@@ -242,6 +326,20 @@ export interface ExportDetails {
   customsDutyRate?: number;
   customsBrokerGLN?: string;
   incoterms?: string; // e.g., FOB, CIF
+}
+
+export interface EPass {
+  ePassNo: string;
+  vehicleNo: string;
+  driverName: string;
+  driverLicense: string;
+  fromLocation: string;
+  toLocation: string;
+  distanceKm: number;
+  validUntil: string;
+  generatedDate: string;
+  routeDetails: string;
+  status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
 }
 
 export interface GSTDetails {

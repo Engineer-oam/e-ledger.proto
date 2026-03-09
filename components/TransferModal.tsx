@@ -19,6 +19,9 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
   
   // Step 1: Basic Info
   const [recipient, setRecipient] = useState({ gln: '', name: '' });
+  const [isVerifyingGLN, setIsVerifyingGLN] = useState(false);
+  const [verifiedRecipient, setVerifiedRecipient] = useState<User | null>(null);
+  const [verificationError, setVerificationError] = useState('');
   
   // Step 2: Compliance Info (EWB & GST)
   const [gstData, setGstData] = useState({
@@ -76,7 +79,40 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
         toast.warn("Please enter a valid Organization Name.");
         return false;
     }
+    if (!verifiedRecipient) {
+        toast.warn("Please verify the Recipient GLN before proceeding.");
+        return false;
+    }
     return true;
+  };
+
+  const handleVerifyGLN = async () => {
+    if (!recipient.gln || recipient.gln.length !== 13) {
+        setVerificationError("GLN must be exactly 13 digits.");
+        return;
+    }
+    setIsVerifyingGLN(true);
+    setVerificationError('');
+    setVerifiedRecipient(null);
+    
+    try {
+        // We need to import AuthService at the top of the file
+        const { AuthService } = await import('../services/authService');
+        const user = await AuthService.getPublicProfile(recipient.gln);
+        
+        if (user) {
+            setVerifiedRecipient(user);
+            setRecipient(prev => ({ ...prev, name: user.orgName }));
+            toast.success("Recipient verified successfully!");
+        } else {
+            setVerificationError("No entity found with this GLN.");
+            toast.error("Verification failed. Entity not found.");
+        }
+    } catch (err) {
+        setVerificationError("Error verifying GLN.");
+    } finally {
+        setIsVerifyingGLN(false);
+    }
   };
 
   const validateStep2 = () => {
@@ -275,14 +311,28 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-slate-500 uppercase">Recipient GLN</label>
-                            <input 
-                                autoFocus
-                                required
-                                value={recipient.gln}
-                                onChange={e => setRecipient({...recipient, gln: e.target.value})}
-                                className="w-full border border-slate-300 rounded-lg px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow shadow-sm"
-                                placeholder="0000000000000"
-                            />
+                            <div className="flex gap-2">
+                                <input 
+                                    autoFocus
+                                    required
+                                    value={recipient.gln}
+                                    onChange={e => {
+                                        setRecipient({...recipient, gln: e.target.value});
+                                        setVerifiedRecipient(null);
+                                        setVerificationError('');
+                                    }}
+                                    className="flex-1 border border-slate-300 rounded-lg px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow shadow-sm"
+                                    placeholder="0000000000000"
+                                />
+                                <button
+                                    onClick={handleVerifyGLN}
+                                    disabled={isVerifyingGLN || recipient.gln.length !== 13}
+                                    className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-3 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {isVerifyingGLN ? 'Verifying...' : 'Verify'}
+                                </button>
+                            </div>
+                            {verificationError && <p className="text-xs text-red-500 mt-1">{verificationError}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-slate-500 uppercase">Organization Name</label>
@@ -290,11 +340,32 @@ const TransferModal: React.FC<TransferModalProps> = ({ batches, onClose, onSubmi
                                 required
                                 value={recipient.name}
                                 onChange={e => setRecipient({...recipient, name: e.target.value})}
-                                className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow shadow-sm"
+                                disabled={!!verifiedRecipient}
+                                className={`w-full border border-slate-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow shadow-sm ${verifiedRecipient ? 'bg-slate-50 text-slate-500' : ''}`}
                                 placeholder="e.g. State Warehouse 1"
                             />
                         </div>
                     </div>
+
+                    {verifiedRecipient && (
+                        <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
+                            <div className="p-2 bg-emerald-100 rounded-full text-emerald-600 shrink-0">
+                                <ShieldCheck size={24} />
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <h4 className="font-bold text-emerald-900">{verifiedRecipient.orgName}</h4>
+                                    <span className="bg-emerald-200 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Verified</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-2 text-sm text-emerald-800">
+                                    <p><span className="opacity-70">Role:</span> {verifiedRecipient.role.replace('_', ' ')}</p>
+                                    <p><span className="opacity-70">Location:</span> {verifiedRecipient.state || verifiedRecipient.country}</p>
+                                    <p><span className="opacity-70">Contact:</span> {verifiedRecipient.name}</p>
+                                    <p><span className="opacity-70">Sector:</span> {verifiedRecipient.sector}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {!isBulk && (
                         <div className="mt-4 border-t border-slate-100 pt-4">

@@ -336,7 +336,7 @@ const ProductVerifier: React.FC = () => {
 
                         <div className="mt-8 pt-8 border-t border-slate-100 text-center">
                             <p className="text-xs text-slate-500">
-                                This entity is authorized to transact on the E-Ledger Network.
+                                This entity is authorized to transact on the State Excise E-Ledger.
                                 <br/>Always verify digital signatures on invoices matching this GLN.
                             </p>
                         </div>

@@ -4,10 +4,13 @@ import { CountryConfig, Sector, UserRole, User, Batch, ERPType } from './types';
 
 // Default roles for sectors to apply to all countries
 const DEFAULT_EXCISE_ROLES = [
-  { role: UserRole.MANUFACTURER, label: 'Producer / Distillery', description: 'Production and manufacturing node' },
-  { role: UserRole.DISTRIBUTOR, label: 'Regional Warehouse', description: 'Bulk storage and logistics hub' },
-  { role: UserRole.RETAILER, label: 'Authorized Vendor', description: 'Point of sale to consumers' },
-  { role: UserRole.REGULATOR, label: 'Excise Authority', description: 'Government oversight and tax enforcement' }
+  { role: UserRole.DISTILLERY, label: 'Distillery / Producer', description: 'Production and manufacturing node for spirits' },
+  { role: UserRole.BREWERY, label: 'Brewery', description: 'Production and manufacturing node for beer' },
+  { role: UserRole.WHOLESALER, label: 'Wholesale Licensee (L-1 / FL-1)', description: 'Bulk storage and logistics hub' },
+  { role: UserRole.RETAIL_VEND, label: 'Retail Vend', description: 'Point of sale to consumers (Liquor Shop)' },
+  { role: UserRole.BAR_RESTAURANT, label: 'Bar / Restaurant', description: 'On-premise consumption' },
+  { role: UserRole.STATE_EXCISE_COMMISSIONER, label: 'State Excise Commissioner', description: 'State-level government oversight and tax enforcement' },
+  { role: UserRole.DISTRICT_EXCISE_OFFICER, label: 'District Excise Officer', description: 'District-level enforcement and monitoring' }
 ];
 
 // Updated for Global Pharma Structure
@@ -63,6 +66,18 @@ export const PHARMA_SUB_CATEGORIES = [
   'Community Health Center',
   'Online Pharmacy',
   'Cold Chain Logistics'
+];
+
+export const EXCISE_SUB_CATEGORIES = [
+  'IMFL (Indian Made Foreign Liquor)',
+  'Country Liquor (CL)',
+  'Beer',
+  'Wine',
+  'BIO (Bottled In Origin)',
+  'RTD (Ready to Drink)',
+  'ENA (Extra Neutral Alcohol)',
+  'Rectified Spirit (RS)',
+  'Denatured Spirit'
 ];
 
 const createCountry = (code: string, name: string): CountryConfig => ({

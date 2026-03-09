@@ -48,7 +48,12 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
       taxableValue: 0,
       mrp: 0,
       dosageForm: '',
-      alcoholContent: 0
+      alcoholContent: 0,
+      liquorType: 'IMFL',
+      packageSize: '750ML',
+      bulkLiters: 0,
+      proofLiters: 0,
+      alcoholicStrength: 42.8
     };
 
     switch (user.sector) {
@@ -280,19 +285,29 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 2);
     
+    const qty = Math.floor(Math.random() * 500) + 50;
+    const isExcise = user.sector === Sector.EXCISE;
+    const bl = isExcise ? qty * 9 : 0; // Assuming 9 BL per case
+    const pl = isExcise ? bl * 0.428 : 0; // Assuming 42.8% strength
+
     setFormData({
       gtin: AuthService.generateGTIN(),
       productName: products[idx],
       lotNumber: randomLot,
       expiryDate: futureDate.toISOString().split('T')[0],
-      quantity: Math.floor(Math.random() * 500) + 50,
+      quantity: qty,
       unit: unit,
-      alcoholContent: user.sector === Sector.EXCISE ? 42.8 : 0,
+      alcoholContent: isExcise ? 42.8 : 0,
+      liquorType: cats[idx] === 'Rum' || cats[idx] === 'Whisky' ? 'IMFL' : 'BEER',
+      packageSize: forms[idx].includes('750ml') ? '750ML' : forms[idx].includes('180ml') ? '180ML' : forms[idx].includes('375ml') ? '375ML' : '500ML',
+      bulkLiters: bl,
+      proofLiters: pl,
+      alcoholicStrength: 42.8,
       dosageForm: forms[idx],
       category: cats[idx],
-      isDutyPaid: user.sector !== Sector.EXCISE,
+      isDutyPaid: !isExcise,
       hsnCode: hsn,
-      taxableValue: (Math.floor(Math.random() * 500) + 50) * 450,
+      taxableValue: qty * 450,
       taxRate: tax,
       mrp: Math.floor(Math.random() * 500) + 100
     });
@@ -427,6 +442,9 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Product / Variant</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">GTIN</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Category</th>
+                    {user.sector === Sector.EXCISE && (
+                      <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">BL / PL</th>
+                    )}
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Action</th>
                     </tr>
@@ -472,6 +490,14 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                             </td>
                             <td className="px-6 py-4 font-mono text-sm text-slate-600">{batch.gtin}</td>
                             <td className="px-6 py-4 text-sm text-slate-600">{batch.category || 'N/A'}</td>
+                            {user.sector === Sector.EXCISE && (
+                              <td className="px-6 py-4 text-sm text-slate-600">
+                                <div className="flex flex-col">
+                                  <span>{batch.bulkLiters ? `${batch.bulkLiters.toFixed(2)} BL` : '-'}</span>
+                                  <span className="text-xs text-slate-400">{batch.proofLiters ? `${batch.proofLiters.toFixed(2)} PL` : '-'}</span>
+                                </div>
+                              </td>
+                            )}
                             <td className="px-6 py-4">
                             <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(batch.status)} whitespace-nowrap`}>
                                 {batch.status.replace('_', ' ')}
@@ -782,22 +808,57 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                       <div><label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Expiry Date</label><input required type="date" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" value={formData.expiryDate} onChange={e => setFormData({...formData, expiryDate: e.target.value})} /></div>
                       <div><label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Quantity ({formData.unit})</label><input required type="number" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" value={formData.quantity} onChange={e => setFormData({...formData, quantity: parseInt(e.target.value)})} /></div>
                     </div>
+
+                    {user.sector === Sector.EXCISE && (
+                      <div className="grid grid-cols-2 gap-4 mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                        <div>
+                          <label className="block text-[10px] font-bold text-amber-700 uppercase mb-1.5">Liquor Type</label>
+                          <select className="w-full border border-amber-300 rounded-lg px-4 py-2 text-sm bg-white" value={formData.liquorType} onChange={e => setFormData({...formData, liquorType: e.target.value})}>
+                            <option value="IMFL">IMFL</option>
+                            <option value="CL">Country Liquor</option>
+                            <option value="BEER">Beer</option>
+                            <option value="WINE">Wine</option>
+                            <option value="BIO">BIO</option>
+                            <option value="RTD">RTD</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-amber-700 uppercase mb-1.5">Package Size</label>
+                          <select className="w-full border border-amber-300 rounded-lg px-4 py-2 text-sm bg-white" value={formData.packageSize} onChange={e => setFormData({...formData, packageSize: e.target.value})}>
+                            <option value="750ML">Quart (750ml)</option>
+                            <option value="375ML">Pint (375ml)</option>
+                            <option value="180ML">Nip (180ml)</option>
+                            <option value="500ML">Can (500ml)</option>
+                            <option value="330ML">Can (330ml)</option>
+                            <option value="BULK">Bulk</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-amber-700 uppercase mb-1.5">Bulk Liters (BL)</label>
+                          <input required type="number" step="0.01" className="w-full border border-amber-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 outline-none transition text-sm" value={formData.bulkLiters} onChange={e => setFormData({...formData, bulkLiters: parseFloat(e.target.value)})} />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-amber-700 uppercase mb-1.5">Proof Liters (PL)</label>
+                          <input required type="number" step="0.01" className="w-full border border-amber-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 outline-none transition text-sm" value={formData.proofLiters} onChange={e => setFormData({...formData, proofLiters: parseFloat(e.target.value)})} />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Right Column: Financial Compliance */}
                   <div className="space-y-4">
                     <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 border-b pb-1">
                       <Landmark size={16} className="text-emerald-600" />
-                      GST & Pricing (India)
+                      {user.sector === Sector.EXCISE ? 'Excise Duty & Pricing' : 'GST & Pricing (India)'}
                     </h4>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">HSN Code</label>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">{user.sector === Sector.EXCISE ? 'Excise Tariff Code' : 'HSN Code'}</label>
                         <input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-mono" value={formData.hsnCode} onChange={e => setFormData({...formData, hsnCode: e.target.value})} />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">GST Rate (%)</label>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">{user.sector === Sector.EXCISE ? 'Duty Rate (%)' : 'GST Rate (%)'}</label>
                         <div className="relative">
                           <Percent size={14} className="absolute right-3 top-2.5 text-slate-400" />
                           <input required type="number" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" value={formData.taxRate} onChange={e => setFormData({...formData, taxRate: parseInt(e.target.value)})} />
@@ -833,7 +894,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
 
                     <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
                       <div className="flex justify-between text-[10px] font-bold text-emerald-700 uppercase mb-1">
-                        <span>GST Projection</span>
+                        <span>{user.sector === Sector.EXCISE ? 'Duty Projection' : 'GST Projection'}</span>
                         <span>{((formData.taxableValue * formData.taxRate) / 100).toLocaleString()}</span>
                       </div>
                       <div className="w-full bg-emerald-200 h-1 rounded-full overflow-hidden">

@@ -188,7 +188,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <div className="inline-block p-2 bg-white rounded-2xl mb-2 shadow-lg shadow-indigo-900/50 transform rotate-3">
                 <Logo size="md" />
             </div>
-            <h1 className="text-2xl font-extrabold text-white mb-0.5 tracking-tight">E-Ledger Supply Chain</h1>
+            <h1 className="text-2xl font-extrabold text-white mb-0.5 tracking-tight">State Excise E-Ledger</h1>
             <p className="text-slate-400 text-xs font-medium">Supply Chain Integrity Portal</p>
           </div>
         </div>

@@ -49,8 +49,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               <Logo size="sm" />
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-tighter">E-LEDGER NETWORK</h1>
-              <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">{user.sector} HUB</p>
+              <h1 className="text-xl font-black tracking-tighter">STATE EXCISE E-LEDGER</h1>
+              <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">{user.state ? `${user.state} ` : ''}{user.sector} HUB</p>
             </div>
           </div>
           <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-400 hover:text-white transition-colors">
@@ -96,7 +96,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           <div className="flex items-center gap-4 md:gap-6">
              <div className="hidden sm:flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
                <Activity size={14} className="text-emerald-600" />
-               <span className="text-[10px] font-black uppercase text-emerald-800">Global Trade / GS1 Ready</span>
+               <span className="text-[10px] font-black uppercase text-emerald-800">State Excise Compliance</span>
              </div>
              <div className="flex flex-col items-end">
                <span className="text-[10px] text-slate-400 font-black uppercase">License ID</span>
