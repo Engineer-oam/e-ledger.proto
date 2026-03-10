@@ -225,12 +225,24 @@ const ProductVerifier: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Potency / Strength</p>
-                    <p className="font-bold text-lg text-slate-800">{result.alcoholContent || 'N/A'}<span className="text-xs text-slate-500 ml-1">Unit</span></p>
+                    <p className="font-bold text-lg text-slate-800">{result.alcoholContent || result.alcoholicStrength || 'N/A'}<span className="text-xs text-slate-500 ml-1">% v/v</span></p>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Volume / Qty</p>
                     <p className="font-bold text-lg text-slate-800">{result.quantity} <span className="text-xs text-slate-500">{result.unit}</span></p>
                   </div>
+                  {result.liquorType && (
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Liquor Type</p>
+                        <p className="font-bold text-lg text-slate-800">{result.liquorType}</p>
+                      </div>
+                  )}
+                  {result.packageSize && (
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Package Size</p>
+                        <p className="font-bold text-lg text-slate-800">{result.packageSize.replace('_', ' ')}</p>
+                      </div>
+                  )}
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 col-span-2">
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Expiry / Manufacture</p>
                     <p className="font-bold text-lg text-slate-800">{result.expiryDate}</p>
@@ -336,7 +348,7 @@ const ProductVerifier: React.FC = () => {
 
                         <div className="mt-8 pt-8 border-t border-slate-100 text-center">
                             <p className="text-xs text-slate-500">
-                                This entity is authorized to transact on the State Excise E-Ledger.
+                                This entity is authorized to transact on the E-Ledger India network.
                                 <br/>Always verify digital signatures on invoices matching this GLN.
                             </p>
                         </div>

@@ -1,17 +1,60 @@
 import React from 'react';
+import { Sector } from '../types';
 
 interface LogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  sector?: Sector;
 }
 
-const Logo: React.FC<LogoProps> = ({ className = "", size = "md" }) => {
+const Logo: React.FC<LogoProps> = ({ className = "", size = "md", sector = Sector.EXCISE }) => {
   const sizeClasses = {
     sm: "h-10 w-10 p-1.5",
     md: "h-14 w-14 p-2",
     lg: "h-32 w-32 p-4",
     xl: "h-64 w-64 p-8"
   };
+
+  const sectorColors = {
+    [Sector.EXCISE]: {
+      primary: '#4f46e5', // Indigo 600
+      secondary: '#3730a3', // Indigo 800
+      accent: '#818cf8', // Indigo 400
+      accentDark: '#4338ca'
+    },
+    [Sector.PHARMA]: {
+      primary: '#2563eb', // Blue 600
+      secondary: '#1e40af', // Blue 800
+      accent: '#60a5fa', // Blue 400
+      accentDark: '#1d4ed8'
+    },
+    [Sector.FMCG]: {
+      primary: '#059669', // Emerald 600
+      secondary: '#065f46', // Emerald 800
+      accent: '#34d399', // Emerald 400
+      accentDark: '#047857'
+    },
+    [Sector.AGRICULTURE]: {
+      primary: '#d97706', // Amber 600
+      secondary: '#92400e', // Amber 800
+      accent: '#fbbf24', // Amber 400
+      accentDark: '#b45309'
+    },
+    [Sector.TEXTILE]: {
+      primary: '#e11d48', // Rose 600
+      secondary: '#9f1239', // Rose 800
+      accent: '#fb7185', // Rose 400
+      accentDark: '#be123c'
+    },
+    [Sector.GENERAL]: {
+      primary: '#475569', // Slate 600
+      secondary: '#1e293b', // Slate 800
+      accent: '#94a3b8', // Slate 400
+      accentDark: '#334155'
+    }
+  };
+
+  const colors = sectorColors[sector] || sectorColors[Sector.GENERAL];
 
   const cx = 250;
   const cy = 250;
@@ -78,16 +121,15 @@ const Logo: React.FC<LogoProps> = ({ className = "", size = "md" }) => {
     <div className={`relative flex items-center justify-center flex-shrink-0 bg-white rounded-full shadow-sm ${sizeClasses[size]} ${className}`}>
       <svg viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <defs>
-          <linearGradient id="eNavy" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1a3a5a" />
-            <stop offset="100%" stopColor="#0F2437" />
+          <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={colors.primary} />
+            <stop offset="100%" stopColor={colors.secondary} />
           </linearGradient>
-          <linearGradient id="hexBorder" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#0a5c57" />
-            <stop offset="50%" stopColor="#1ccfc2" />
-            <stop offset="100%" stopColor="#0a5c57" />
+          <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={colors.accentDark} />
+            <stop offset="50%" stopColor={colors.accent} />
+            <stop offset="100%" stopColor={colors.accentDark} />
           </linearGradient>
-          {/* Clip path for inner border effect */}
           <clipPath id="hexClip">
             <path d={hexSlabPath} />
           </clipPath>
@@ -104,19 +146,17 @@ const Logo: React.FC<LogoProps> = ({ className = "", size = "md" }) => {
         </defs>
 
         <g filter="url(#brandingShadow)">
-          <path d={ringPath} fill="url(#eNavy)" />
-          <path d={trianglePath} fill="url(#eNavy)" />
+          <path d={ringPath} fill="url(#primaryGrad)" />
+          <path d={trianglePath} fill="url(#primaryGrad)" />
 
           {blockPositions.map((pos, i) => (
             <g key={i} transform={`translate(${pos.x}, ${pos.y})`}>
-              {/* Fill */}
               <path d={hexSlabPath} fill="#ffffff" />
-              {/* Clipped Inner Border */}
               <g clipPath="url(#hexClip)">
                 <path 
                   d={hexSlabPath} 
                   fill="none" 
-                  stroke="url(#hexBorder)" 
+                  stroke="url(#accentGrad)" 
                   strokeWidth="20" 
                   strokeLinejoin="round"
                 />

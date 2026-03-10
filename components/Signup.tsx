@@ -17,12 +17,14 @@ const Signup: React.FC = () => {
     gln: '',
     country: 'IN',
     state: 'Maharashtra',
-    sector: Sector.EXCISE, // Default to Excise
+    sector: Sector.PHARMA, // Default to Pharma
     role: UserRole.MANUFACTURER,
     positionLabel: '',
     password: '',
     erpType: ERPType.MANUAL,
-    subCategories: [] as string[]
+    subCategories: [] as string[],
+    drugLicenseNo: '',
+    pharmacistRegNo: ''
   });
 
   const [isCountryModalOpen, setIsCountryModalOpen] = useState(false);
@@ -124,7 +126,10 @@ const Signup: React.FC = () => {
           positionLabel: formData.positionLabel,
           erpType: formData.erpType,
           erpStatus: formData.erpType === ERPType.MANUAL ? 'CONNECTED' : 'PENDING',
-          subCategories: formData.subCategories
+          subCategories: formData.subCategories,
+          drugLicenseNo: formData.drugLicenseNo,
+          pharmacistRegNo: formData.pharmacistRegNo,
+          gstin: formData.gln
         }
       );
       navigate('/login');
@@ -148,15 +153,15 @@ const Signup: React.FC = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-8">
                 <Logo size="sm" />
-                <span className="font-bold text-lg tracking-tight">State Excise E-Ledger</span>
+                <span className="font-bold text-lg tracking-tight">Pharma Ledger India</span>
             </div>
             <h2 className="text-3xl font-black mb-4 tracking-tighter leading-tight">
               Join the <br/>
-              <span className="text-teal-400">Secure Supply</span> <br/>
+              <span className="text-teal-400">Trusted Pharma</span> <br/>
               Network.
             </h2>
             <p className="text-slate-400 text-xs leading-relaxed max-w-xs">
-              Onboard your entity to the unified cross-enterprise traceability ledger. Ensure compliance with global trade & tax mandates.
+              Onboard your entity to the unified blockchain traceability ledger. Ensure compliance with CDSCO, iVEDA, and GS1 mandates.
             </p>
           </div>
 
@@ -205,10 +210,10 @@ const Signup: React.FC = () => {
                   <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
                     <Logo size="sm" className="scale-75" />
                   </div>
-                  <span className="font-bold text-sm tracking-tight">State Excise E-Ledger</span>
+                  <span className="font-bold text-sm tracking-tight">Pharma Ledger India</span>
                </div>
                <h2 className="text-xl font-black">
-                 Join the <span className="text-teal-400">Network.</span>
+                 Join the <span className="text-teal-400">Pharma Network.</span>
                </h2>
              </div>
           </div>
@@ -267,7 +272,7 @@ const Signup: React.FC = () => {
 
                 <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-500 uppercase flex justify-between">
-                        <span>{formData.sector === Sector.EXCISE ? 'Excise License Number' : 'Tax ID / Global Location Number'}</span>
+                        <span>{formData.sector === Sector.EXCISE ? 'Excise License Number' : 'GSTIN (India Tax ID)'}</span>
                         {gstValid === true && <span className="text-teal-600 flex items-center gap-1"><CheckCircle2 size={10} /> Valid Format</span>}
                         {gstValid === false && <span className="text-red-500 flex items-center gap-1"><AlertCircle size={10} /> Invalid Format</span>}
                     </label>
@@ -281,7 +286,7 @@ const Signup: React.FC = () => {
                                 value={formData.gln} 
                                 onChange={handleChange} 
                                 className={`w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-xl text-sm font-mono focus:bg-white outline-none transition-all ${gstValid === false ? 'border-red-300 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-teal-500'}`} 
-                                placeholder={formData.sector === Sector.EXCISE ? "e.g. FL-1/12345" : "27AAPCA1234A1Z5"} 
+                                placeholder={formData.sector === Sector.EXCISE ? "e.g. FL-1/12345" : "e.g. 27AAPCA1234A1Z5"} 
                             />
                         </div>
                         <button type="button" onClick={handleGenerateGLN} className="px-4 bg-slate-100 rounded-xl hover:bg-slate-200 text-slate-600 transition-colors" title="Generate Demo ID">
@@ -289,6 +294,25 @@ const Signup: React.FC = () => {
                         </button>
                     </div>
                 </div>
+
+                {formData.sector === Sector.PHARMA && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Drug License No. (Form 20/21)</label>
+                        <div className="relative">
+                            <FileText className="absolute left-3 top-3 text-slate-400" size={18} />
+                            <input name="drugLicenseNo" required value={formData.drugLicenseNo} onChange={handleChange} className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all" placeholder="e.g. MH-MZ1-123456" />
+                        </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase">Pharmacist Reg. No. (Optional)</label>
+                        <div className="relative">
+                            <Stethoscope className="absolute left-3 top-3 text-slate-400" size={18} />
+                            <input name="pharmacistRegNo" value={formData.pharmacistRegNo} onChange={handleChange} className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all" placeholder="e.g. PCI/123456" />
+                        </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Simulated File Upload */}
                 <div className="space-y-1.5">

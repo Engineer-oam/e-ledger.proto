@@ -1,6 +1,6 @@
 {
-  "name": "E-Ledger India",
-  "description": "A permissioned, GS1-compliant blockchain ledger for Excise and Pharma supply chains.",
+  "name": "Pharma Ledger India",
+  "description": "A comprehensive blockchain-backed traceability and regulatory compliance platform for the Indian Pharmaceutical sector, supporting CDSCO, SLA, and NPPA oversight.",
   "requestFramePermissions": [
     "camera"
   ]

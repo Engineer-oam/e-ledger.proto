@@ -48,6 +48,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
       taxableValue: 0,
       mrp: 0,
       dosageForm: '',
+      serialNumber: '',
       alcoholContent: 0,
       liquorType: 'IMFL',
       packageSize: '750ML',
@@ -143,6 +144,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
 
     try {
       const taxAmount = (formData.taxableValue * formData.taxRate) / 100;
+      const gstProjection = user.sector === Sector.PHARMA ? taxAmount : undefined;
       
       // Inject signature into batch data payload
       const batchPayload: Partial<Batch> = {
@@ -152,6 +154,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
         dutyPaid: formData.isDutyPaid,
         status: BatchStatus.CREATED, 
         taxAmount: taxAmount,
+        gstProjection: gstProjection,
         // @ts-ignore - appending custom data
         data: {
             signedBy: signature.name,
@@ -257,9 +260,9 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
     let tax = 18;
 
     if (user.sector === Sector.PHARMA) {
-        products = ['Amoxicillin 500mg', 'Paracetamol IP', 'Insulin Glargine', 'Azithromycin Tabs', 'Vitamix-D3'];
-        forms = ['Tablet', 'Capsule', 'Injectable', 'Syrup', 'Tablet'];
-        cats = ['Prescription (Rx)', 'OTC', 'Biologic', 'Prescription (Rx)', 'Supplement'];
+        products = ['Amoxicillin 500mg', 'Paracetamol IP', 'Insulin Glargine', 'Azithromycin Tabs', 'Vitamix-D3', 'Metformin 500mg', 'Pantoprazole 40mg'];
+        forms = ['Tablet', 'Capsule', 'Injectable', 'Syrup', 'Tablet', 'Tablet', 'Tablet'];
+        cats = ['Prescription (Rx)', 'OTC', 'Biologic', 'Prescription (Rx)', 'Supplement', 'Prescription (Rx)', 'Prescription (Rx)'];
         unit = 'Packs';
         hsn = '3004';
         tax = 12;
@@ -304,6 +307,7 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
       proofLiters: pl,
       alcoholicStrength: 42.8,
       dosageForm: forms[idx],
+      serialNumber: `(01)${AuthService.generateGTIN()}(21)${Math.floor(Math.random() * 1000000000)}`,
       category: cats[idx],
       isDutyPaid: !isExcise,
       hsnCode: hsn,
@@ -803,6 +807,13 @@ const BatchManager: React.FC<BatchManagerProps> = ({ user }) => {
                       <div><label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">GTIN</label><input required maxLength={14} minLength={14} type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition font-mono text-sm" value={formData.gtin} onChange={e => setFormData({...formData, gtin: e.target.value})} placeholder="00089012345678" /></div>
                       <div><label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Lot / Batch No</label><input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" value={formData.lotNumber} onChange={e => setFormData({...formData, lotNumber: e.target.value})} placeholder="LOT-2024-X" /></div>
                     </div>
+
+                    {user.sector === Sector.PHARMA && (
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">SGTIN / Serial Number (India iVEDA)</label>
+                        <input required type="text" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition font-mono text-sm" value={formData.serialNumber} onChange={e => setFormData({...formData, serialNumber: e.target.value})} placeholder="(01)0890... (21)12345..." />
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                       <div><label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Expiry Date</label><input required type="date" className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" value={formData.expiryDate} onChange={e => setFormData({...formData, expiryDate: e.target.value})} /></div>

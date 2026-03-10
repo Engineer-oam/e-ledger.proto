@@ -54,7 +54,18 @@ export const AuthService = {
     gln: string, 
     role: UserRole, 
     password: string,
-    context: { country: string, sector: Sector, positionLabel: string, erpType: ERPType, erpStatus: any, subCategories?: string[] }
+    context: { 
+      country: string, 
+      state?: string,
+      sector: Sector, 
+      positionLabel: string, 
+      erpType: ERPType, 
+      erpStatus: any, 
+      subCategories?: string[],
+      drugLicenseNo?: string,
+      pharmacistRegNo?: string,
+      gstin?: string
+    }
   ): Promise<User> => {
     if (isRemote()) {
       try {

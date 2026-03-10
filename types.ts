@@ -67,6 +67,15 @@ export enum UserRole {
   CUSTOMS_OFFICIAL = 'CUSTOMS_OFFICIAL',
   PORT_OPERATOR = 'PORT_OPERATOR',
   SYSTEM_ADMIN = 'SYSTEM_ADMIN',
+  // Pharma Specific Roles (India)
+  CDSCO_OFFICIAL = 'CDSCO_OFFICIAL',
+  SLA_OFFICIAL = 'SLA_OFFICIAL',
+  NPPA_OFFICIAL = 'NPPA_OFFICIAL',
+  CF_AGENT = 'CF_AGENT',
+  SUPER_STOCKIST = 'SUPER_STOCKIST',
+  STOCKIST = 'STOCKIST',
+  SUB_STOCKIST = 'SUB_STOCKIST',
+  PHARMACIST = 'PHARMACIST',
   // Excise Specific Roles
   STATE_EXCISE_COMMISSIONER = 'STATE_EXCISE_COMMISSIONER',
   DISTRICT_EXCISE_OFFICER = 'DISTRICT_EXCISE_OFFICER',
@@ -172,6 +181,7 @@ export interface Batch {
   taxableValue?: number;
   taxRate?: number;
   taxAmount?: number;
+  gstProjection?: number; // India Pharma Specific
   mrp?: number; // Maximum Retail Price (India Specific)
 
   // Return tracking
@@ -194,6 +204,10 @@ export interface User {
   erpType: ERPType;
   erpStatus: 'CONNECTED' | 'DISCONNECTED' | 'PENDING';
   subCategories?: string[];
+  // India Pharma Specific KYC
+  drugLicenseNo?: string;
+  pharmacistRegNo?: string;
+  gstin?: string;
 }
 
 // Internal ERP Data Structures

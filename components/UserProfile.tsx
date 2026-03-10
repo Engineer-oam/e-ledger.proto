@@ -184,7 +184,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onUpdate }) => {
                                     <Lock className="text-indigo-600" size={20} />
                                     <span>Password & Authentication</span>
                                 </h3>
-                                <p className="text-sm text-slate-500 mt-1">Manage how you sign in to the State Excise E-Ledger.</p>
+                                <p className="text-sm text-slate-500 mt-1">Manage how you sign in to the E-Ledger India network.</p>
                             </div>
                             <button className="text-xs font-bold text-indigo-600 hover:text-indigo-800 px-4 py-2 bg-indigo-50 rounded-lg transition-colors">
                                 Update Password

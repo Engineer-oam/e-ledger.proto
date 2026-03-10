@@ -22,11 +22,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     case UserRole.IMPORTER:
     case UserRole.LOGISTICS_PROVIDER:
     case UserRole.WHOLESALER:
+    case UserRole.CF_AGENT:
+    case UserRole.SUPER_STOCKIST:
+    case UserRole.STOCKIST:
+    case UserRole.SUB_STOCKIST:
       return <DistributorDashboard user={user} />;
     
     case UserRole.RETAILER:
     case UserRole.RETAIL_VEND:
     case UserRole.BAR_RESTAURANT:
+    case UserRole.PHARMACIST:
       return <RetailerDashboard user={user} />;
     
     case UserRole.REGULATOR:
@@ -36,6 +41,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     case UserRole.SYSTEM_ADMIN:
     case UserRole.STATE_EXCISE_COMMISSIONER:
     case UserRole.DISTRICT_EXCISE_OFFICER:
+    case UserRole.CDSCO_OFFICIAL:
+    case UserRole.SLA_OFFICIAL:
+    case UserRole.NPPA_OFFICIAL:
       return <RegulatorDashboard user={user} />;
       
     default:

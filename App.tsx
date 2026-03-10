@@ -4,6 +4,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import BatchManager from './components/BatchManager';
+import StakeholderManager from './components/StakeholderManager';
 import TraceVisualizer from './components/TraceVisualizer';
 import Assistant from './components/Assistant';
 import LandingPage from './components/LandingPage';
@@ -53,6 +54,7 @@ const App: React.FC = () => {
                 <Routes>
                   <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
                   <Route path="/batches" element={<BatchManager user={currentUser} />} />
+                  <Route path="/stakeholders" element={<StakeholderManager user={currentUser} />} />
                   <Route path="/trace/:id" element={<TraceVisualizer user={currentUser} />} />
                   <Route path="/assistant" element={<Assistant />} />
                   <Route path="/financials" element={<FinancialRecords user={currentUser} />} />

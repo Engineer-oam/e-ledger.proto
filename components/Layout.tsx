@@ -49,7 +49,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               <Logo size="sm" />
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-tighter">STATE EXCISE E-LEDGER</h1>
+              <h1 className="text-xl font-black tracking-tighter uppercase">
+                {user.sector === Sector.PHARMA ? 'Pharma Ledger India' : 'State Excise E-Ledger'}
+              </h1>
               <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">{user.state ? `${user.state} ` : ''}{user.sector} HUB</p>
             </div>
           </div>
@@ -61,6 +63,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
         <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
           <NavItem to="/dashboard" icon={LayoutDashboard} label="Network Panel" active={location.pathname === '/dashboard'} />
           <NavItem to="/batches" icon={Pill} label="Inventory" active={location.pathname === '/batches'} />
+          <NavItem to="/stakeholders" icon={Globe} label="Stakeholders" active={location.pathname === '/stakeholders'} />
           <NavItem to="/blockchain" icon={LinkIcon} label="Chain Explorer" active={location.pathname === '/blockchain'} />
           <NavItem to="/financials" icon={Wallet} label="Sales & Tax" active={location.pathname === '/financials'} />
           <NavItem to="/verify" icon={ScanLine} label="Verify Authenticity" active={location.pathname === '/verify'} />
@@ -96,7 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           <div className="flex items-center gap-4 md:gap-6">
              <div className="hidden sm:flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
                <Activity size={14} className="text-emerald-600" />
-               <span className="text-[10px] font-black uppercase text-emerald-800">State Excise Compliance</span>
+               <span className="text-[10px] font-black uppercase text-emerald-800">{user.sector === Sector.PHARMA ? 'Pharma Regulatory Compliance' : 'State Excise Compliance'}</span>
              </div>
              <div className="flex flex-col items-end">
                <span className="text-[10px] text-slate-400 font-black uppercase">License ID</span>

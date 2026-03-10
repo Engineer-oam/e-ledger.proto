@@ -80,7 +80,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
            <h3 className="font-bold text-slate-800 flex items-center gap-2">
              <Camera size={20} className="text-indigo-600" />
-             <span>Scan Excise QR</span>
+             <span>Scan Security QR</span>
            </h3>
            <button 
              onClick={onClose}

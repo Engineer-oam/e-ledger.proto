@@ -39,13 +39,13 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
           <div className="flex items-center gap-3">
             <Logo size="md" />
             <div>
-                <span className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase block leading-none">State Excise E-Ledger</span>
-                <span className="text-[9px] md:text-[10px] font-bold text-teal-600 uppercase tracking-widest block leading-none">State Liquor Supply Chain</span>
+                <span className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase block leading-none">Pharma Ledger India</span>
+                <span className="text-[9px] md:text-[10px] font-bold text-teal-600 uppercase tracking-widest block leading-none">National Pharmaceutical Supply Chain</span>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-4">
-             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Excise Compliance</span>
-             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Revenue Tracking</span>
+             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">CDSCO Compliance</span>
+             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">iVEDA Tracking</span>
           </div>
         </div>
       </nav>
@@ -61,30 +61,30 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
           <div className="flex flex-col lg:flex-row items-center gap-12 md:gap-24">
             
             <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 text-[10px] font-black uppercase tracking-widest mb-8">
+               <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 text-[10px] font-black uppercase tracking-widest mb-8">
                 <Globe size={14} />
-                Excise Traceability & Revenue
+                Pharma Traceability & Compliance
               </div>
               <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-slate-900 leading-[1.1] mb-8 tracking-tighter">
-                Secure <br/>
-                <span className="text-teal-500">Excise</span> Chain.
+                Trusted <br/>
+                <span className="text-teal-500">Pharma</span> Ledger.
               </h1>
               <p className="text-lg md:text-xl text-slate-500 max-w-xl leading-relaxed mb-12 mx-auto lg:mx-0">
-                The unified blockchain ledger for state excise supply chain operations. Streamlining liquor trade with automated compliance, real-time revenue tracking, and state-mandated serialization standards.
+                The unified blockchain ledger for the Indian pharmaceutical supply chain. Streamlining drug distribution with automated compliance, real-time iVEDA reporting, and GS1-mandated serialization standards.
               </p>
               
               <div className="flex flex-wrap justify-center lg:justify-start gap-8 md:gap-12 text-slate-400">
                 <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]">
-                   <Box size={24} className="text-teal-500" />
-                   Excise Ready
+                   <Pill size={24} className="text-teal-500" />
+                   CDSCO Ready
                 </div>
                 <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]">
                    <Activity size={24} className="text-blue-500" />
-                   Revenue Audit
+                   iVEDA Audit
                 </div>
                 <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]">
                    <Truck size={24} className="text-green-500" />
-                   e-Pass Logistics
+                   GS1 Logistics
                 </div>
               </div>
             </div>
@@ -102,7 +102,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
 
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Excise License / GSTIN</label>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Drug License / GSTIN</label>
                     <div className="relative">
                       <KeyRound className="absolute left-4 top-4 text-slate-600" size={18} />
                       <input
@@ -111,7 +111,7 @@ const LandingPage: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) =
                         value={gln}
                         onChange={(e) => setGln(e.target.value)}
                         className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-12 py-4 text-white text-sm font-mono focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                        placeholder="Excise License No"
+                        placeholder="e.g. 27AAPCA1234A1Z5"
                       />
                     </div>
                   </div>

@@ -296,6 +296,10 @@ export const LedgerService = {
         if (!batch) continue;
         if (batch.currentOwnerGLN !== u.gln) continue;
 
+        // Generate e-Pass for Excise sector
+        const isExcise = u.sector === Sector.EXCISE;
+        const ePassNo = isExcise ? `EPASS-${Date.now()}-${Math.floor(Math.random() * 1000)}` : undefined;
+
         const dispatchEvent: TraceEvent = {
             eventID: `evt-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             type: 'DISPATCH',
@@ -305,11 +309,14 @@ export const LedgerService = {
             location: u.country === 'IN' ? 'Outbound Dock' : 'Distribution Center',
             txHash: await sha256(`DISPATCH:${id}:${to}:${Date.now()}`),
             previousHash: batch.trace[batch.trace.length - 1]?.txHash || batch.genesisHash,
+            ePassNo,
+            vehicleNo: ewbPartial?.vehicleNo,
             metadata: {
                 recipient: name,
                 recipientGLN: to,
                 gst,
                 ewayBill: ewbPartial ? { ...ewbPartial, generatedDate: new Date().toISOString() } : undefined,
+                ePassNo,
                 paymentStatus: payment?.status,
                 exportDetails,
                 stakeholders
@@ -324,6 +331,28 @@ export const LedgerService = {
 
         await LedgerService.updateBatch(updatedBatch, dispatchEvent);
     }
+    return true;
+  },
+
+  reportBreakage: async (batchID: string, reason: string, evidence: string, actor: User): Promise<boolean> => {
+    const batch = await LedgerService.getBatchByID(batchID);
+    if (!batch) return false;
+
+    const breakageEvent: TraceEvent = {
+      eventID: `evt-${Date.now()}`,
+      type: 'BREAKAGE_REPORTED',
+      timestamp: new Date().toISOString(),
+      actorGLN: actor.gln,
+      actorName: actor.orgName,
+      location: 'Warehouse / Transit',
+      txHash: await sha256(`BREAKAGE:${batchID}:${Date.now()}`),
+      previousHash: batch.trace[batch.trace.length-1].txHash,
+      metadata: { reason, evidence }
+    };
+
+    const updated = { ...batch, status: BatchStatus.DESTROYED };
+    await LedgerService.updateBatch(updated, breakageEvent);
+    logAuditLocal(actor.gln, 'BREAKAGE_REPORTED', batchID, `Reason: ${reason}`);
     return true;
   },
 

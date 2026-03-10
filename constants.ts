@@ -16,9 +16,14 @@ const DEFAULT_EXCISE_ROLES = [
 // Updated for Global Pharma Structure
 const DEFAULT_PHARMA_ROLES = [
   { role: UserRole.MANUFACTURER, label: 'Manufacturer / Marketer', description: 'Own Manufacturing, Contract Mfg, or Third Party' },
-  { role: UserRole.DISTRIBUTOR, label: 'Logistics / Stockist', description: '3PL, Super Stockist, or Wholesaler' },
-  { role: UserRole.RETAILER, label: 'Pharmacy / Hospital', description: 'Retail Drug Store or Hospital Pharmacy' },
-  { role: UserRole.REGULATOR, label: 'Health Authority', description: 'National or Regional Drug Control Authority' }
+  { role: UserRole.CF_AGENT, label: 'C&F Agent', description: 'Carrying and Forwarding Agent' },
+  { role: UserRole.SUPER_STOCKIST, label: 'Super Stockist', description: 'Primary bulk distribution node' },
+  { role: UserRole.STOCKIST, label: 'Stockist', description: 'Regional distribution node' },
+  { role: UserRole.SUB_STOCKIST, label: 'Sub-Stockist', description: 'Secondary distribution node' },
+  { role: UserRole.PHARMACIST, label: 'Registered Pharmacist', description: 'Retail or Hospital Pharmacist (PCI Registered)' },
+  { role: UserRole.CDSCO_OFFICIAL, label: 'CDSCO Regulator', description: 'Central Drugs Standard Control Organization' },
+  { role: UserRole.SLA_OFFICIAL, label: 'State Licensing Authority', description: 'State Drug Control Department' },
+  { role: UserRole.NPPA_OFFICIAL, label: 'NPPA Official', description: 'National Pharmaceutical Pricing Authority' }
 ];
 
 const DEFAULT_FMCG_ROLES = [

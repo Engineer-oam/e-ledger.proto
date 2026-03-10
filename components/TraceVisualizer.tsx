@@ -153,6 +153,18 @@ const TraceVisualizer: React.FC<{ user: User }> = ({ user }) => {
                                         <span className="font-mono">{event.metadata.ewayBill.ewbNo}</span>
                                     </div>
                                 )}
+                                {event.ePassNo && (
+                                    <div className="flex items-center justify-between text-slate-600">
+                                        <span className="font-bold flex items-center gap-1"><FileText size={10} /> e-Pass</span>
+                                        <span className="font-mono bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">{event.ePassNo}</span>
+                                    </div>
+                                )}
+                                {event.vehicleNo && (
+                                    <div className="flex items-center justify-between text-slate-600">
+                                        <span className="font-bold flex items-center gap-1"><Truck size={10} /> Vehicle</span>
+                                        <span className="font-mono">{event.vehicleNo}</span>
+                                    </div>
+                                )}
                                 {event.metadata.paymentStatus && (
                                     <div className="flex items-center justify-between text-slate-600">
                                         <span className="font-bold flex items-center gap-1"><CreditCard size={10} /> Payment</span>

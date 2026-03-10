@@ -3,7 +3,7 @@ import { User, Batch, AuditLog } from '../../types';
 import { LedgerService } from '../../services/ledgerService';
 import { useRealTimeData } from '../../hooks/useRealTimeData';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { ShieldCheck, AlertTriangle, DollarSign, Eye, Server, Map, FileText, Search, User as UserIcon, Clock, Fingerprint, Plus } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, DollarSign, Eye, Server, Map, FileText, Search, User as UserIcon, Clock, Fingerprint, Plus, IndianRupee } from 'lucide-react';
 
 import DocumentVault from '../DocumentVault';
 
@@ -123,17 +123,43 @@ const RegulatorDashboard: React.FC<{ user: User }> = ({ user }) => {
                 </div>
 
                 <div className="flex gap-8 relative z-10">
-                <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Duty / Tax Collected</p>
-                    <p className="text-2xl font-black text-emerald-400 flex items-center justify-end">
-                        <DollarSign size={20} />
-                        {(stats.totalVolume * 450).toLocaleString()}
-                    </p>
-                </div>
-                <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Compliance Rate</p>
-                    <p className="text-2xl font-black text-blue-400">98.2%</p>
-                </div>
+                {user.sector === 'EXCISE' ? (
+                    <>
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Bulk Liters (BL)</p>
+                            <p className="text-2xl font-black text-blue-400 flex items-center justify-end">
+                                {batches.reduce((acc, b) => acc + (b.bulkLiters || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Proof Liters (PL)</p>
+                            <p className="text-2xl font-black text-indigo-400 flex items-center justify-end">
+                                {batches.reduce((acc, b) => acc + (b.proofLiters || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Est. Duty Revenue</p>
+                            <p className="text-2xl font-black text-emerald-400 flex items-center justify-end">
+                                <IndianRupee size={20} />
+                                {(batches.reduce((acc, b) => acc + (b.proofLiters || 0), 0) * 300).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </p>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Duty / Tax Collected</p>
+                            <p className="text-2xl font-black text-emerald-400 flex items-center justify-end">
+                                <DollarSign size={20} />
+                                {(stats.totalVolume * 450).toLocaleString()}
+                            </p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Compliance Rate</p>
+                            <p className="text-2xl font-black text-blue-400">98.2%</p>
+                        </div>
+                    </>
+                )}
                 </div>
             </div>
 
